@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import {
-  Loader,
   Skeleton,
   ChartSkeleton,
   MetricCardSkeleton,
@@ -395,12 +394,12 @@ useEffect(() => {
         </div>
 
         {/* Loading indicator */}
-        {loading && (
+        {/* {loading && (
           <div className="bg-gray-600 text-white px-4 py-2 flex items-center justify-center space-x-2">
             <Loader variant="dots" size="sm" color="secondary" />
             <span className="text-sm font-medium">Loading engine propulsion data...</span>
           </div>
-        )}
+        )} */}
 
         {/* Status Overview */}
         <div className="p-4 border-b border-gray-700 grid grid-cols-1 md:grid-cols-6 gap-4">

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
-import { Loader, Skeleton, ChartSkeleton, MetricCardSkeleton } from "../components";
+import {Skeleton, ChartSkeleton, MetricCardSkeleton } from "../components";
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { SuctionSystemService, type SuctionSystemData } from "../services/suctionSystemService";
 import "../styles/suction-system.css";
@@ -64,12 +64,12 @@ export default function SuctionSystem() {
         </div>
 
         {/* Loading indicator */}
-        {loading && (
+        {/* {loading && (
           <div className="bg-gray-600 text-white px-4 py-2 flex items-center justify-center space-x-2">
             <Loader variant="dots" size="sm" color="secondary" />
             <span className="text-sm font-medium">Loading suction system data...</span>
           </div>
-        )}
+        )} */}
 
         {/* Status Overview */}
         <div className="p-4 border-b border-gray-700 grid grid-cols-1 md:grid-cols-5 gap-4">

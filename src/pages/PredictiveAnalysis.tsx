@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
-import { Loader, Skeleton, ChartSkeleton, Spinner } from "../components";
+import { Skeleton, ChartSkeleton, Spinner } from "../components";
 import Chart from "chart.js/auto";
 import type { Chart as ChartJS } from "chart.js";
 import { predictiveAnalysisService } from "../services/predictiveAnalysisService";
@@ -463,12 +463,12 @@ export default function PredictiveAnalysis() {
         </header>
 
         {/* Loading Banner */}
-        {loading && (
+        {/* {loading && (
           <div className="bg-gray-600 text-white px-4 py-2 flex items-center justify-center space-x-2">
             <Loader variant="dots" size="sm" color="secondary" />
             <span className="text-sm font-medium">Loading predictive analysis data...</span>
           </div>
-        )}
+        )} */}
 
         {/* Error Banner */}
         {error && (
@@ -559,7 +559,7 @@ export default function PredictiveAnalysis() {
               ) : (
                 <>
                   {/* Engine Health Card */}
-                  <div className="bg-gray-800 rounded-lg shadow-lg p-4 border-l-4 border-blue-500 border border-gray-700">
+                  <div className="bg-gray-800 rounded-lg shadow-lg p-4 border border-gray-700">
                     <div className="flex justify-between">
                       <h3 className="font-medium text-gray-200">Engine Health</h3>
                       <i className="fas fa-engine text-blue-400"></i>
@@ -581,7 +581,7 @@ export default function PredictiveAnalysis() {
                   </div>
 
                   {/* Suction Efficiency Card */}
-                  <div className="bg-gray-800 rounded-lg shadow-lg p-4 border-l-4 border-green-500 border border-gray-700">
+                  <div className="bg-gray-800 rounded-lg shadow-lg p-4 border-l-4 border-gray-700">
                     <div className="flex justify-between">
                       <h3 className="font-medium text-gray-200">Suction Efficiency</h3>
                       <i className="fas fa-water text-green-400"></i>
@@ -603,7 +603,7 @@ export default function PredictiveAnalysis() {
                   </div>
 
                   {/* Overall Efficiency Card */}
-                  <div className="bg-gray-800 rounded-lg shadow-lg p-4 border-l-4 border-purple-500 border border-gray-700">
+                  <div className="bg-gray-800 rounded-lg shadow-lg p-4 border border-gray-700">
                     <div className="flex justify-between">
                       <h3 className="font-medium text-gray-200">Dredging Efficiency</h3>
                       <i className="fas fa-tachometer-alt text-purple-400"></i>
@@ -625,7 +625,7 @@ export default function PredictiveAnalysis() {
                   </div>
 
                   {/* Alerts Card */}
-                  <div className="bg-gray-800 rounded-lg shadow-lg p-4 border-l-4 border-gray-500 border border-gray-700">
+                  <div className="bg-gray-800 rounded-lg shadow-lg p-4 border border-gray-700">
                     <div className="flex justify-between">
                       <h3 className="font-medium text-gray-200">System Alerts</h3>
                       <i className="fas fa-exclamation-triangle text-red-400"></i>

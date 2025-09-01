@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import Sidebar from "../components/Sidebar";
-import { Loader, Skeleton, ChartSkeleton, MetricCardSkeleton, Spinner } from "../components";
+import { Skeleton, ChartSkeleton, MetricCardSkeleton, Spinner } from "../components";
 import { dashboardService, type DashboardData } from "../services/dashboardService";
 import "../services/forcerefreshservice";
 import "../styles/dashboard.css";
@@ -239,12 +239,12 @@ export default function Dashboard() {
       <Sidebar />
       <div className="flex-1 flex flex-col p-4 md:p-6 overflow-hidden relative">
         {/* Loading Banner */}
-        {loading && (
+        {/* {loading && (
           <div className="bg-gray-600 text-white px-4 py-2 flex items-center justify-center space-x-2 mb-4 rounded-lg">
             <Loader variant="dots" size="sm" color="secondary" />
             <span className="text-sm font-medium">Loading dashboard data...</span>
           </div>
-        )}
+        )} */}
 
         {/* Top Metrics Row */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6 relative z-10">
