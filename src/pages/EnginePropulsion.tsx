@@ -547,11 +547,11 @@ export default function EnginePropulsion() {
                     {[1, 2, 3].map((i) => (
                       <div key={i}>
                         <Skeleton variant="text" className="w-1/3 mb-2" />
-                        <ChartSkeleton type="line" height="h-32" />
+                        <ChartSkeleton type="line" height="h-32 mb-2" />
                         <div className="flex justify-between text-xs mt-1">
-                          <Skeleton variant="text" className="w-16" />
-                          <Skeleton variant="text" className="w-16" />
-                          <Skeleton variant="text" className="w-16" />
+                          <Skeleton variant="text" className="w-16 mb-2" />
+                          <Skeleton variant="text" className="w-16 mb-2" />
+                          <Skeleton variant="text" className="w-16 mb-2" />
                         </div>
                       </div>
                     ))}
@@ -591,11 +591,11 @@ export default function EnginePropulsion() {
                     {[1, 2, 3].map((i) => (
                       <div key={i}>
                         <Skeleton variant="text" className="w-1/3 mb-2" />
-                        <ChartSkeleton type="line" height="h-32" />
+                        <ChartSkeleton type="line" height="h-32 mb-2" />
                         <div className="flex justify-between text-xs mt-1">
-                          <Skeleton variant="text" className="w-16" />
-                          <Skeleton variant="text" className="w-16" />
-                          <Skeleton variant="text" className="w-16" />
+                          <Skeleton variant="text" className="w-16 mb-2" />
+                          <Skeleton variant="text" className="w-16 mb-2" />
+                          <Skeleton variant="text" className="w-16 mb-2" />
                         </div>
                       </div>
                     ))}
@@ -654,11 +654,11 @@ export default function EnginePropulsion() {
                   <>
                     {[1, 2].map((i) => (
                       <div key={i}>
-                        <Spinner variant="dual-ring" size="xl" color="primary" />
+                        <Skeleton variant="text" className="w-1/3 mb-2" />
                         <div className="h-32 flex items-center justify-center">
                           <Spinner variant="dual-ring" size="xl" color="primary" />
                         </div>
-                        <Spinner variant="dual-ring" size="xl" color="primary" />
+                        <Skeleton variant="text" className="w-full text-center mt-1" />
                       </div>
                     ))}
                   </>
@@ -681,9 +681,9 @@ export default function EnginePropulsion() {
                     {[1, 2, 3].map((i) => (
                       <div key={i}>
                         <Skeleton variant="text" className="w-1/3 mb-2" />
-                        <ChartSkeleton type="line" height="h-20" />
+                        <ChartSkeleton type="line" height="h-20 mb-2" />
                         <div className="flex justify-between items-center mt-1">
-                          <Skeleton variant="text" className="w-24" />
+                          <Skeleton variant="text" className="w-24 mb-2" />
                           <div className="flex items-center">
                             <Skeleton variant="text" className="w-16 mr-2" />
                             <Skeleton variant="avatar" className="w-2 h-2" />
@@ -729,9 +729,9 @@ export default function EnginePropulsion() {
                     {[1, 2, 3].map((i) => (
                       <div key={i}>
                         <Skeleton variant="text" className="w-1/3 mb-2" />
-                        <ChartSkeleton type="line" height="h-20" />
+                        <ChartSkeleton type="line" height="h-20 mb-2" />
                         <div className="flex justify-between items-center mt-1">
-                          <Skeleton variant="text" className="w-24" />
+                          <Skeleton variant="text" className="w-24 mb-2" />
                           <div className="flex items-center">
                             <Skeleton variant="text" className="w-16 mr-2" />
                             <Skeleton variant="avatar" className="w-2 h-2" />
@@ -758,10 +758,10 @@ export default function EnginePropulsion() {
                       <div key={i} className="border-l-4 border-gray-600 pl-3 py-2 bg-gray-700 rounded">
                         <div className="flex justify-between items-center">
                           <div>
-                            <Skeleton variant="text" className="w-32 mb-1" />
+                            <Skeleton variant="text" className="w-32 mb-3" />
                             <Skeleton variant="text" className="w-24" />
                           </div>
-                          <Skeleton variant="avatar" className="w-5 h-5" />
+                          <Skeleton variant="avatar" className="w-5 h-5 mr-2" />
                         </div>
                       </div>
                     ))}
@@ -806,10 +806,10 @@ export default function EnginePropulsion() {
                       <div key={i} className="border-l-4 border-gray-600 pl-3 py-2 bg-gray-700 rounded">
                         <div className="flex justify-between items-center">
                           <div>
-                            <Skeleton variant="text" className="w-32 mb-1" />
+                            <Skeleton variant="text" className="w-32 mb-3" />
                             <Skeleton variant="text" className="w-24" />
                           </div>
-                          <Skeleton variant="avatar" className="w-5 h-5" />
+                          <Skeleton variant="avatar" className="w-5 h-5 mr-2" />
                         </div>
                       </div>
                     ))}

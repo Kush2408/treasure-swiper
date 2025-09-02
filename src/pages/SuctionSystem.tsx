@@ -169,7 +169,7 @@ export default function SuctionSystem() {
                   <>
                     {[1, 2, 3].map((i) => (
                       <div key={i} className="bg-gray-700 rounded-lg p-3">
-                        <Skeleton variant="text" className="w-1/2 mb-1" />
+                        <Skeleton variant="text" className="w-1/2 mb-2" />
                         <Skeleton variant="text" className="w-1/3" />
                       </div>
                     ))}
@@ -193,7 +193,7 @@ export default function SuctionSystem() {
                   <>
                     {[1, 2, 3].map((i) => (
                       <div key={i} className="bg-gray-700 rounded-lg p-3">
-                        <Skeleton variant="text" className="w-1/2 mb-1" />
+                        <Skeleton variant="text" className="w-1/2 mb-2" />
                         <Skeleton variant="text" className="w-1/3" />
                       </div>
                     ))}
@@ -215,10 +215,10 @@ export default function SuctionSystem() {
                       <div key={i} className="border-l-4 border-gray-600 pl-3 py-2 bg-gray-700 rounded">
                         <div className="flex justify-between items-center">
                           <div>
-                            <Skeleton variant="text" className="w-32 mb-1" />
+                            <Skeleton variant="text" className="w-32 mb-2" />
                             <Skeleton variant="text" className="w-24" />
                           </div>
-                          <Skeleton variant="avatar" className="w-5 h-5" />
+                          <Skeleton variant="avatar" className="w-5 h-5 mr-2" />
                         </div>
                       </div>
                     ))}
@@ -259,10 +259,10 @@ export default function SuctionSystem() {
                       <div key={i} className="border-l-4 border-gray-600 pl-3 py-2 bg-gray-700 rounded">
                         <div className="flex justify-between items-center">
                           <div>
-                            <Skeleton variant="text" className="w-32 mb-1" />
+                            <Skeleton variant="text" className="w-32 mb-2" />
                             <Skeleton variant="text" className="w-24" />
                           </div>
-                          <Skeleton variant="avatar" className="w-5 h-5" />
+                          <Skeleton variant="avatar" className="w-5 h-5 mr-2" />
                         </div>
                       </div>
                     ))}

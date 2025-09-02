@@ -467,13 +467,13 @@ export default function Dashboard() {
                     <Skeleton variant="text" className="w-20" />
                     <Skeleton variant="text" className="w-8" />
                   </div>
-                  <Skeleton variant="card" className="h-2 rounded-full" />
+                  <Skeleton variant="text" className="h-2 mt-3" />
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   {[1, 2, 3, 4].map((i) => (
                     <div key={i} className="bg-gray-700 rounded p-2">
-                      <Skeleton variant="text" className="w-16 mb-1" />
-                      <Skeleton variant="text" className="w-12" />
+                      <Skeleton variant="text" className="w-16 mb-3" />
+                      <Skeleton variant="text" className="w-12 mb-3" />
                     </div>
                   ))}
                 </div>
@@ -515,13 +515,13 @@ export default function Dashboard() {
                     <Skeleton variant="text" className="w-20" />
                     <Skeleton variant="text" className="w-8" />
                   </div>
-                  <Skeleton variant="card" className="h-2 rounded-full" />
+                  <Skeleton variant="text" className="h-2 mt-3" />
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   {[1, 2, 3, 4].map((i) => (
                     <div key={i} className="bg-gray-700 rounded p-2">
-                      <Skeleton variant="text" className="w-16 mb-1" />
-                      <Skeleton variant="text" className="w-12" />
+                      <Skeleton variant="text" className="w-16 mb-3" />
+                      <Skeleton variant="text" className="w-12 mb-3" />
                     </div>
                   ))}
                 </div>

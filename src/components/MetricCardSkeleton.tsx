@@ -7,7 +7,7 @@ export default function MetricCardSkeleton() {
                         bg-gradient-to-r from-[var(--skeleton-bg-2)] via-[var(--skeleton-bg-1)] to-[var(--skeleton-bg-2)]"></div>
       </div>
       <div className="flex-1">
-        <div className="h-4 w-20 mb-2 rounded animate-shimmer
+        <div className="h-4 w-20 mb-3 rounded animate-shimmer
                         bg-gradient-to-r from-[var(--skeleton-bg-1)] via-[var(--skeleton-bg-2)] to-[var(--skeleton-bg-1)]"></div>
         <div className="h-6 w-16 rounded animate-shimmer
                         bg-gradient-to-r from-[var(--skeleton-bg-2)] via-[var(--skeleton-bg-1)] to-[var(--skeleton-bg-2)]"></div>

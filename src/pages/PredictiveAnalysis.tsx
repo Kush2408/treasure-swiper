@@ -746,7 +746,7 @@ export default function PredictiveAnalysis() {
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg font-bold text-gray-200">Engine & Propulsion Health</h2>
                 <div className="flex items-center">
-                  <span className="text-xs font-medium bg-blue-900 text-blue-300 px-2 py-1 rounded">Last update: <span id="engine-update-time">2 sec ago</span></span>
+                  <span className="text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded">Last update: <span id="engine-update-time">2 sec ago</span></span>
                 </div>
               </div>
 
@@ -762,8 +762,8 @@ export default function PredictiveAnalysis() {
                         <Skeleton variant="text" className="w-16 h-8" />
                         <Skeleton variant="text" className="w-12" />
                       </div>
-                      <div className="w-full bg-gray-600 rounded-full h-1 mt-1">
-                      <Skeleton variant="text" className="h-1 rounded-full" width="62%" />
+                      <div className="w-full bg-gray-600 rounded-full h-1 mt-3">
+                      {/* <Skeleton variant="text" className="h-1 rounded-full mt-2" width="62%" /> */}
                       </div>
                     </div>
 
@@ -776,8 +776,8 @@ export default function PredictiveAnalysis() {
                         <Skeleton variant="text" className="w-16 h-8" />
                         <Skeleton variant="text" className="w-12" />
                       </div>
-                      <div className="w-full bg-gray-600 rounded-full h-1 mt-1">
-                        <Skeleton variant="text" className="h-1 rounded-full" width= "91%"  />
+                      <div className="w-full bg-gray-600 rounded-full h-1 mt-3">
+                        {/* <Skeleton variant="text" className="h-1 rounded-full" width= "91%"  /> */}
                       </div>
                     </div>
 
@@ -790,8 +790,8 @@ export default function PredictiveAnalysis() {
                         <Skeleton variant="text" className="w-16 h-8" />
                         <Skeleton variant="text" className="w-12" />
                       </div>
-                      <div className="w-full bg-gray-600 rounded-full h-1 mt-1">
-                        <Skeleton variant="text" className="h-1 rounded-full" width="95%"  />
+                      <div className="w-full bg-gray-600 rounded-full h-1 mt-3">
+                        {/* <Skeleton variant="text" className="h-1 rounded-full" width="95%"  /> */}
                       </div>
                     </div>
 
@@ -804,8 +804,8 @@ export default function PredictiveAnalysis() {
                         <Skeleton variant="text" className="w-16 h-8" />
                         <Skeleton variant="text" className="w-12" />
                       </div>
-                      <div className="w-full bg-gray-600 rounded-full h-1 mt-1">
-                        <Skeleton variant="text" className="h-1 rounded-full" width="88%"  />
+                      <div className="w-full bg-gray-600 rounded-full h-1 mt-3">
+                        {/* <Skeleton variant="text" className="h-1 rounded-full" width="88%"  /> */}
                       </div>
                     </div>
                   </>
@@ -894,8 +894,8 @@ export default function PredictiveAnalysis() {
                         <Skeleton variant="text" className="w-16 h-8" />
                         <Skeleton variant="text" className="w-12" />
                       </div>
-                      <div className="w-full bg-gray-600 rounded-full h-1 mt-1">
-                        <Skeleton variant="text" className="h-1 rounded-full" width="62%" />
+                      <div className="w-full bg-gray-600 rounded-full h-1 mt-3">
+                        {/* <Skeleton variant="text" className="h-1 rounded-full" width="62%" /> */}
                       </div>
                     </div>
 
@@ -908,8 +908,8 @@ export default function PredictiveAnalysis() {
                         <Skeleton variant="text" className="w-16 h-8" />
                         <Skeleton variant="text" className="w-12" />
                       </div>
-                      <div className="w-full bg-gray-600 rounded-full h-1 mt-1">
-                        <Skeleton variant="text" className="h-1 rounded-full"  width= "91%"  />
+                      <div className="w-full bg-gray-600 rounded-full h-1 mt-3">
+                        {/* <Skeleton variant="text" className="h-1 rounded-full"  width= "91%"  /> */}
                       </div>
                     </div>
 
@@ -922,8 +922,8 @@ export default function PredictiveAnalysis() {
                         <Skeleton variant="text" className="w-16 h-8" />
                         <Skeleton variant="text" className="w-12" />
                       </div>
-                      <div className="w-full bg-gray-600 rounded-full h-1 mt-1">
-                        <Skeleton variant="text" className="h-1 rounded-full"  width="95%" />
+                      <div className="w-full bg-gray-600 rounded-full h-1 mt-3">
+                        {/* <Skeleton variant="text" className="h-1 rounded-full"  width="95%" /> */}
                       </div>
                     </div>
 
@@ -936,8 +936,8 @@ export default function PredictiveAnalysis() {
                         <Skeleton variant="text" className="w-16 h-8" />
                         <Skeleton variant="text" className="w-12" />
                       </div>
-                      <div className="w-full bg-gray-600 rounded-full h-1 mt-1">
-                        <Skeleton variant="text" className="h-1 rounded-full"  width= "88%" />
+                      <div className="w-full bg-gray-600 rounded-full h-1 mt-3">
+                        {/* <Skeleton variant="text" className="h-1 rounded-full"  width= "88%" /> */}
                       </div>
                     </div>
                   </>
@@ -972,7 +972,7 @@ export default function PredictiveAnalysis() {
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg font-bold text-gray-200">Suction System Performance</h2>
                 <div className="flex items-center">
-                  <span className="text-xs font-medium bg-blue-900 text-blue-300 px-2 py-1 rounded">Last update: <span id="suction-update-time">2 sec ago</span></span>
+                  <span className="text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded">Last update: <span id="suction-update-time">2 sec ago</span></span>
                 </div>
               </div>
 
@@ -988,8 +988,8 @@ export default function PredictiveAnalysis() {
                         <Skeleton variant="text" className="w-16 h-8" />
                         <Skeleton variant="text" className="w-12" />
                       </div>
-                      <div className="w-full bg-gray-600 rounded-full h-1 mt-1">
-                        <Skeleton variant="text" className="h-1 rounded-full" width= "92%" />
+                      <div className="w-full bg-gray-600 rounded-full h-1 mt-3">
+                        {/* <Skeleton variant="text" className="h-1 rounded-full" width= "92%" /> */}
                       </div>
                     </div>
 
@@ -1002,8 +1002,8 @@ export default function PredictiveAnalysis() {
                         <Skeleton variant="text" className="w-16 h-8" />
                         <Skeleton variant="text" className="w-12" />
                       </div>
-                      <div className="w-full bg-gray-600 rounded-full h-1 mt-1">
-                        <Skeleton variant="text" className="h-1 rounded-full" width= "47%"  />
+                      <div className="w-full bg-gray-600 rounded-full h-1 mt-3">
+                        {/* <Skeleton variant="text" className="h-1 rounded-full" width= "47%"  /> */}
                       </div>
                     </div>
 
@@ -1016,8 +1016,8 @@ export default function PredictiveAnalysis() {
                         <Skeleton variant="text" className="w-16 h-8" />
                         <Skeleton variant="text" className="w-12" />
                       </div>
-                      <div className="w-full bg-gray-600 rounded-full h-1 mt-1">
-                        <Skeleton variant="text" className="h-1 rounded-full" width= "65%"  />
+                      <div className="w-full bg-gray-600 rounded-full h-1 mt-3">
+                        {/* <Skeleton variant="text" className="h-1 rounded-full" width= "65%"  /> */}
                       </div>
                     </div>
 
@@ -1030,8 +1030,8 @@ export default function PredictiveAnalysis() {
                         <Skeleton variant="text" className="w-16 h-8" />
                         <Skeleton variant="text" className="w-12" />
                       </div>
-                      <div className="w-full bg-gray-600 rounded-full h-1 mt-1">
-                        <Skeleton variant="text" className="h-1 rounded-full"  width= "88%"  />
+                      <div className="w-full bg-gray-600 rounded-full h-1 mt-3">
+                        {/* <Skeleton variant="text" className="h-1 rounded-full"  width= "88%"  /> */}
                       </div>
                     </div>
                   </>
@@ -1120,8 +1120,8 @@ export default function PredictiveAnalysis() {
                         <Skeleton variant="text" className="w-16 h-8" />
                         <Skeleton variant="text" className="w-12" />
                       </div>
-                      <div className="w-full bg-gray-600 rounded-full h-1 mt-1">
-                        <Skeleton variant="text" className="h-1 rounded-full" width= "92%"  />
+                      <div className="w-full bg-gray-600 rounded-full h-1 mt-3">
+                        {/* <Skeleton variant="text" className="h-1 rounded-full" width= "92%"  /> */}
                       </div>
                     </div>
 
@@ -1134,8 +1134,8 @@ export default function PredictiveAnalysis() {
                         <Skeleton variant="text" className="w-16 h-8" />
                         <Skeleton variant="text" className="w-12" />
                       </div>
-                      <div className="w-full bg-gray-600 rounded-full h-1 mt-1">
-                        <Skeleton variant="text" className="h-1 rounded-full" width= "47%" />
+                      <div className="w-full bg-gray-600 rounded-full h-1 mt-3">
+                        {/* <Skeleton variant="text" className="h-1 rounded-full" width= "47%" /> */}
                       </div>
                     </div>
 
@@ -1148,8 +1148,8 @@ export default function PredictiveAnalysis() {
                         <Skeleton variant="text" className="w-16 h-8" />
                         <Skeleton variant="text" className="w-12" />
                       </div>
-                      <div className="w-full bg-gray-600 rounded-full h-1 mt-1">
-                        <Skeleton variant="text" className="h-1 rounded-full" width= "65%" />
+                      <div className="w-full bg-gray-600 rounded-full h-1 mt-3">
+                        {/* <Skeleton variant="text" className="h-1 rounded-full" width= "65%" /> */}
                       </div>
                     </div>
 
@@ -1162,8 +1162,8 @@ export default function PredictiveAnalysis() {
                         <Skeleton variant="text" className="w-16 h-8" />
                         <Skeleton variant="text" className="w-12" />
                       </div>
-                      <div className="w-full bg-gray-600 rounded-full h-1 mt-1">
-                        <Skeleton variant="text" className="h-1 rounded-full" width = "88%" />
+                      <div className="w-full bg-gray-600 rounded-full h-1 mt-3">
+                        {/* <Skeleton variant="text" className="h-1 rounded-full" width = "88%" /> */}
                       </div>
                     </div>
                   </>

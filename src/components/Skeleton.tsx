@@ -13,7 +13,7 @@ export default function Skeleton({
   width,
   height 
 }: SkeletonProps) {
-  const baseClasses = 'animate-pulse rounded';
+  const baseClasses = 'animate-shimmer rounded';
   
   const variantClasses = {
     text: 'h-4',
@@ -33,14 +33,5 @@ export default function Skeleton({
   if (width) style.width = width;
   if (height) style.height = height;
 
-  return (
-    <div 
-      className={classes} 
-      style={{
-        ...style,
-        backgroundColor: 'var(--skeleton-bg-1)',
-        opacity: 0.7
-      }}
-    ></div>
-  );
+  return <div className={classes} style={style}></div>;
 }

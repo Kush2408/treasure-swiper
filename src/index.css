@@ -113,9 +113,12 @@ body {
 }
 
 .animate-shimmer {
-  animation: shimmer 20s infinite ease-in-out;
+  background: linear-gradient(
+    90deg,
+    var(--skeleton-bg-1) 0%,
+    var(--skeleton-bg-2) 50%,
+    var(--skeleton-bg-1) 100%
+  );
   background-size: 200% 100%;
+  animation: shimmer 50s infinite ease-in-out;
 }
-  
-
-  
