@@ -8,6 +8,7 @@ import "../styles/suction-system.css";
 export default function SuctionSystem() {
   const [data, setData] = useState<SuctionSystemData | null>(null);
   const [loading, setLoading] = useState(true);
+  const getCssVar = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
   const fetchData = async () => {
     try {
@@ -29,6 +30,15 @@ export default function SuctionSystem() {
 
   useEffect(() => {
     fetchData();
+  }, []);
+
+  useEffect(() => {
+    const onThemeChange = () => {
+      // Recharts reads colors from props; force re-render
+      setData((d) => (d ? { ...d } : d));
+    };
+    window.addEventListener('themechange', onThemeChange);
+    return () => window.removeEventListener('themechange', onThemeChange);
   }, []);
 
   const formatChartData = (values: number[]) => {
@@ -294,15 +304,15 @@ export default function SuctionSystem() {
                       <div className="h-32">
                         <ResponsiveContainer width="100%" height="100%">
                           <AreaChart data={formatChartData(data.draghead_and_cutter.draghead_pressure_and_flow)}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                            <XAxis dataKey="index" stroke="#9ca3af" />
-                            <YAxis stroke="#9ca3af" />
+                            <CartesianGrid strokeDasharray="3 3" stroke={getCssVar('--text-secondary') || '#9ca3af'} />
+                            <XAxis dataKey="index" stroke={getCssVar('--text-secondary') || '#9ca3af'} />
+                            <YAxis stroke={getCssVar('--text-secondary') || '#9ca3af'} />
                             <Tooltip
                               contentStyle={{
-                                backgroundColor: '#1f2937',
-                                border: '1px solid #374151',
+                                backgroundColor: getCssVar('--bg-secondary') || '#1f2937',
+                                border: `1px solid ${getCssVar('--border-color') || '#374151'}`,
                                 borderRadius: '6px',
-                                color: '#f9fafb'
+                                color: getCssVar('--text-primary') || '#f9fafb'
                               }}
                             />
                             <Area
@@ -322,15 +332,15 @@ export default function SuctionSystem() {
                       <div className="h-32">
                         <ResponsiveContainer width="100%" height="100%">
                           <LineChart data={formatChartData(data.draghead_and_cutter.cutter_torque_and_rpm)}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                            <XAxis dataKey="index" stroke="#9ca3af" />
-                            <YAxis stroke="#9ca3af" />
+                            <CartesianGrid strokeDasharray="3 3" stroke={getCssVar('--text-secondary') || '#9ca3af'} />
+                            <XAxis dataKey="index" stroke={getCssVar('--text-secondary') || '#9ca3af'} />
+                            <YAxis stroke={getCssVar('--text-secondary') || '#9ca3af'} />
                             <Tooltip
                               contentStyle={{
-                                backgroundColor: '#1f2937',
-                                border: '1px solid #374151',
+                                backgroundColor: getCssVar('--bg-secondary') || '#1f2937',
+                                border: `1px solid ${getCssVar('--border-color') || '#374151'}`,
                                 borderRadius: '6px',
-                                color: '#f9fafb'
+                                color: getCssVar('--text-primary') || '#f9fafb'
                               }}
                             />
                             <Line
@@ -566,15 +576,15 @@ export default function SuctionSystem() {
             ) : data ? (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={formatChartData(data.trend_analysis.suction_pressure)}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                  <XAxis dataKey="index" stroke="#9ca3af" />
-                  <YAxis stroke="#9ca3af" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={getCssVar('--text-secondary') || '#9ca3af'} />
+                  <XAxis dataKey="index" stroke={getCssVar('--text-secondary') || '#9ca3af'} />
+                  <YAxis stroke={getCssVar('--text-secondary') || '#9ca3af'} />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: '#1f2937',
-                      border: '1px solid #374151',
+                      backgroundColor: getCssVar('--bg-secondary') || '#1f2937',
+                      border: `1px solid ${getCssVar('--border-color') || '#374151'}`,
                       borderRadius: '6px',
-                      color: '#f9fafb'
+                      color: getCssVar('--text-primary') || '#f9fafb'
                     }}
                   />
                   <Line

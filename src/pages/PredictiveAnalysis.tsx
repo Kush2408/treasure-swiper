@@ -9,7 +9,7 @@ import "../styles/predictive.css";
 export default function PredictiveAnalysis() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // const [error, setError] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState("00:00:00");
 
   // Chart registry for cleanup
@@ -24,7 +24,7 @@ export default function PredictiveAnalysis() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      setError(null);
+      // setError(null);
 
       console.log("Fetching predictive analysis data...");
       const analysisData = await predictiveAnalysisService.getPredictiveAnalysis();
@@ -35,14 +35,14 @@ export default function PredictiveAnalysis() {
         setData(analysisData);
         console.log('Data set successfully:', analysisData);
       } else {
-        setError("No data received from API");
+        // setError("No data received from API");
         console.log('No data received from API');
       }
 
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to fetch data";
-      setError(errorMessage);
-      console.error("Error fetching predictive analysis data:", err);
+      // const errorMessage = err instanceof Error ? err.message : "Failed to fetch data";
+      // // setError(errorMessage);
+      // console.error("Error fetching predictive analysis data:", err);
     } finally {
       setLoading(false);
     }
@@ -432,23 +432,25 @@ export default function PredictiveAnalysis() {
     // No more random simulation - only use real API data
     // Gauges are updated once when data is received
 
+    const onThemeChange = () => {
+      destroyAll();
+      // retrigger creation with same data
+      setData((d:any) => (d ? { ...d } : d));
+    };
+    window.addEventListener('themechange', onThemeChange);
+
     return () => {
       destroyAll();
+      window.removeEventListener('themechange', onThemeChange);
     };
   }, [data]);
-
-  // Don't return early - render page with skeletons
-
-  // Don't return early - render page with skeletons
-
-  // Don't return early - render page with skeletons
 
   return (
     <div className="min-h-screen flex overflow-hidden bg-gray-900 text-gray-100">
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="bg-gray-800 text-white shadow-lg border-b border-gray-700">
+        <header className="bg-gray-800 border-b border-gray-700 shadow-lg">
           <div className="container mx-auto px-4 py-6 flex justify-between items-center">
             <div className="flex items-center space-x-4">
               <i className="fas fa-ship text-3xl"></i>
@@ -471,7 +473,7 @@ export default function PredictiveAnalysis() {
         )} */}
 
         {/* Error Banner */}
-        {error && (
+        {/* {error && (
           <div className="bg-gray-600 text-white px-4 py-2 flex items-center justify-center space-x-2">
             <i className="fas fa-exclamation-triangle mr-2"></i>
             <span className="text-sm font-medium">Error : {error}</span>
@@ -482,14 +484,14 @@ export default function PredictiveAnalysis() {
               Retry
             </button>
           </div>
-        )}
+        )} */}
 
         {/* Main Content */}
         <main className="container mx-auto px-4 py-6">
           {/* System Overview */}
           <section className="mb-8">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-white">System Overview</h2>
+              <h2 className="text-xl font-bold text-dark">System Overview</h2>
               <div className="flex space-x-2">
                 <button
                   onClick={fetchData}
@@ -581,7 +583,7 @@ export default function PredictiveAnalysis() {
                   </div>
 
                   {/* Suction Efficiency Card */}
-                  <div className="bg-gray-800 rounded-lg shadow-lg p-4 border-l-4 border-gray-700">
+                  <div className="bg-gray-800 rounded-lg shadow-lg p-4 border border-gray-700">
                     <div className="flex justify-between">
                       <h3 className="font-medium text-gray-200">Suction Efficiency</h3>
                       <i className="fas fa-water text-green-400"></i>
@@ -638,7 +640,7 @@ export default function PredictiveAnalysis() {
                             <div className="bg-yellow-500 rounded-full w-3 h-3"></div>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-yellow-300 truncate">Thermal Stress Increasing</p>
+                            <p className="text-sm font-medium text-gray-300 truncate">Thermal Stress Increasing</p>
                           </div>
                         </div>
 
@@ -648,7 +650,7 @@ export default function PredictiveAnalysis() {
                             <div className="bg-green-500 rounded-full w-3 h-3"></div>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-green-300 truncate">Suction Flow Stable</p>
+                            <p className="text-sm font-medium text-green-500 truncate">Suction Flow Stable</p>
                           </div>
                         </div>
 
@@ -658,7 +660,7 @@ export default function PredictiveAnalysis() {
                             <div className="bg-red-500 rounded-full w-3 h-3"></div>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-red-300 truncate">High Bearing Temperature</p>
+                            <p className="text-sm font-medium text-red-500 truncate">High Bearing Temperature</p>
                           </div>
                         </div>
                       </div>
@@ -959,7 +961,7 @@ export default function PredictiveAnalysis() {
                 <button className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded flex items-center justify-center">
                   <i className="fas fa-cogs mr-2"></i> Optimize Engine
                 </button>
-                <button className="bg-gray-600 hover:bg-gray-500 text-gray-200 py-2 px-4 rounded flex items-center justify-center">
+                <button className="bg-gray-600 hover:bg-gray-300 text-gray-500 py-2 px-4 rounded flex items-center justify-center">
                   <i className="fas fa-file-alt mr-2"></i> Generate Report
                 </button>
               </div>
@@ -1185,7 +1187,7 @@ export default function PredictiveAnalysis() {
                 <button className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded flex items-center justify-center">
                   <i className="fas fa-tint-slash mr-2"></i> Adjust Flow
                 </button>
-                <button className="bg-gray-600 hover:bg-gray-500 text-gray-200 py-2 px-4 rounded flex items-center justify-center">
+                <button className="bg-gray-600 hover:bg-gray-300 text-gray-500 py-2 px-4 rounded flex items-center justify-center">
                   <i className="fas fa-file-alt mr-2"></i> Generate Report
                 </button>
               </div>

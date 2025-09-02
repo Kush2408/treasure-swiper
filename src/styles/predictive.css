@@ -75,6 +75,11 @@
     --alert-orange: #ff7b00;
     --steel-gray: #2d3748;
     --deep-space: #0f172a;
+    --bg-primary: #0f172a;
+    --text-primary: #e6f1ff;
+    --text-secondary: #9ca3af;
+    --border-color: rgba(0, 168, 232, 0.3);
+    --shadow-color: rgba(0, 168, 232, 0.2);
 }
 
 /* Glass card and glow effects for sidebar */
@@ -82,16 +87,16 @@
     background: rgba(45, 55, 72, 0.4);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(0, 168, 232, 0.3);
-    box-shadow: 0 8px 32px 0 rgba(0, 168, 232, 0.2);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 32px 0 var(--shadow-color);
 }
 
 .glow-effect {
-    box-shadow: 0 0 10px 2px rgba(0, 255, 157, 0.5);
+    box-shadow: 0 0 10px 2px var(--shadow-color);
 }
 
 .nav-glow {
-    box-shadow: 0 0 15px 3px rgba(0, 255, 157, 0.3);
+    box-shadow: 0 0 15px 3px var(--shadow-color);
 }
 
 /* ... existing styles ... */
@@ -114,7 +119,7 @@
     max-width: 250px;
     font-family: 'Roboto', sans-serif;
     font-size: 16px;
-    color: #333;
+    color: var(--text-primary);
     margin: 0 auto;
 }
 
@@ -182,4 +187,32 @@
 .chart-container {
     position: relative;
     height: 300px;
+}
+
+/* Light theme overrides */
+.light-theme {
+    --ocean-blue: #0066cc;
+    --glow-green: #00cc66;
+    --alert-orange: #e67e22;
+    --steel-gray: #e2e8f0;
+    --deep-space: #f8fafc;
+    --bg-primary: #f8fafc;
+    --text-primary: #1a202c;
+    --text-secondary: #4a5568;
+    --border-color: rgba(0, 102, 204, 0.3);
+    --shadow-color: rgba(0, 102, 204, 0.2);
+}
+
+/* Dark theme overrides (explicit) */
+.dark-theme {
+    --ocean-blue: #00a8e8;
+    --glow-green: #00ff9d;
+    --alert-orange: #ff7b00;
+    --steel-gray: #2d3748;
+    --deep-space: #0f172a;
+    --bg-primary: #0f172a;
+    --text-primary: #e6f1ff;
+    --text-secondary: #9ca3af;
+    --border-color: rgba(0, 168, 232, 0.3);
+    --shadow-color: rgba(0, 168, 232, 0.2);
 }

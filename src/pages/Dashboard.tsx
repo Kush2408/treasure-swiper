@@ -16,6 +16,22 @@ export default function Dashboard() {
   const gaugeValueRef = useRef<HTMLDivElement | null>(null);
   const progressTextRef = useRef<SVGTextElement | null>(null);
 
+  const getCssVar = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const toRgba = (hexOrRgb: string, alpha: number) => {
+    const c = hexOrRgb;
+    if (c.startsWith('#')) {
+      const bigint = parseInt(c.slice(1), 16);
+      const r = (bigint >> 16) & 255;
+      const g = (bigint >> 8) & 255;
+      const b = bigint & 255;
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+    if (c.startsWith('rgb')) {
+      return c.replace('rgb', 'rgba').replace(')', `, ${alpha})`);
+    }
+    return c;
+  };
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -43,6 +59,10 @@ export default function Dashboard() {
 
     let chart: Chart | null = null;
     let portLocationChart: Chart | null = null;
+
+    // Theme-aware colors
+    const textColor = getCssVar('--text-secondary') || '#9ca3af';
+    const gridColor = toRgba(getCssVar('--text-secondary') || '#9ca3af', 0.3);
 
     // Performance Metrics Chart
     if (chartRef.current) {
@@ -80,19 +100,19 @@ export default function Dashboard() {
               legend: { 
                 position: 'top', 
                 labels: { 
-                  color: '#e5e7eb', 
+                  color: textColor, 
                   font: { family: 'Roboto Mono' } 
                 } 
               } 
             },
             scales: {
               x: { 
-                grid: { color: 'rgba(75, 85, 99, 0.3)' }, 
-                ticks: { color: '#9ca3af' } 
+                grid: { color: gridColor }, 
+                ticks: { color: textColor } 
               },
               y: { 
-                grid: { color: 'rgba(75, 85, 99, 0.3)' }, 
-                ticks: { color: '#9ca3af' } 
+                grid: { color: gridColor }, 
+                ticks: { color: textColor } 
               }
             }
           }
@@ -167,7 +187,7 @@ export default function Dashboard() {
               legend: {
                 position: 'top',
                 labels: {
-                  color: '#e5e7eb',
+                  color: textColor,
                   font: { family: 'Roboto Mono' }
                 }
               },
@@ -190,20 +210,20 @@ export default function Dashboard() {
                 title: {
                   display: true,
                   text: 'Longitude',
-                  color: '#9ca3af'
+                  color: textColor
                 },
-                grid: { color: 'rgba(75, 85, 99, 0.3)' },
-                ticks: { color: '#9ca3af' }
+                grid: { color: gridColor },
+                ticks: { color: textColor }
               },
               y: {
                 type: 'linear',
                 title: {
                   display: true,
                   text: 'Latitude',
-                  color: '#9ca3af'
+                  color: textColor
                 },
-                grid: { color: 'rgba(75, 85, 99, 0.3)' },
-                ticks: { color: '#9ca3af' }
+                grid: { color: gridColor },
+                ticks: { color: textColor }
               }
             }
           }
@@ -227,10 +247,20 @@ export default function Dashboard() {
       }
     }, 5000);
 
+    const onThemeChange = () => {
+      // rebuild charts on theme change
+      if (chart) { chart.destroy(); chart = null; }
+      if (portLocationChart) { portLocationChart.destroy(); portLocationChart = null; }
+      // trigger rerender by reusing data state
+      setData((d) => (d ? { ...d } : d));
+    };
+    window.addEventListener('themechange', onThemeChange);
+
     return () => { 
       clearInterval(interval); 
       if (chart) chart.destroy(); 
       if (portLocationChart) portLocationChart.destroy();
+      window.removeEventListener('themechange', onThemeChange);
     };
   }, [data]);
 
@@ -260,51 +290,51 @@ export default function Dashboard() {
             <>
               <div className="bg-gray-800 rounded-lg p-4 flex items-center border border-gray-700">
                 <div className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center mr-3">
-                  <i className="fas fa-temperature-low text-green-400 text-xl"></i>
+                  <i className="fas fa-temperature-low text-gray-400 text-xl"></i>
                 </div>
                 <div>
                   <div className="text-xs text-gray-400">ENGINE TEMP</div>
-                  <div className="text-xl font-bold text-green-400">{data.engine_temperature}°C</div>
+                  <div className="text-xl font-bold text-gray-400">{data.engine_temperature}°C</div>
                 </div>
               </div>
 
               <div className="bg-gray-800 rounded-lg p-4 flex items-center border border-gray-700">
                 <div className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center mr-3">
-                  <i className="fas fa-tachometer-alt text-blue-400 text-xl"></i>
+                  <i className="fas fa-tachometer-alt text-gray-400 text-xl"></i>
                 </div>
                 <div>
                   <div className="text-xs text-gray-400">RPM</div>
-                  <div className="text-xl font-bold text-blue-400">{data.engine_rpm}</div>
+                  <div className="text-xl font-bold text-gray-400">{data.engine_rpm}</div>
                 </div>
               </div>
 
               <div className="bg-gray-800 rounded-lg p-4 flex items-center border border-gray-700">
                 <div className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center mr-3">
-                  <i className="fas fa-battery-three-quarters text-yellow-400 text-xl"></i>
+                  <i className="fas fa-battery-three-quarters text-gray-400 text-xl"></i>
                 </div>
                 <div>
                   <div className="text-xs text-gray-400">POWER</div>
-                  <div className="text-xl font-bold text-yellow-400">{data.power_output}%</div>
+                  <div className="text-xl font-bold text-gray-400">{data.power_output}%</div>
                 </div>
               </div>
 
               <div className="bg-gray-800 rounded-lg p-4 flex items-center border border-gray-700">
                 <div className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center mr-3">
-                  <i className="fas fa-weight-hanging text-purple-400 text-xl"></i>
+                  <i className="fas fa-weight-hanging text-gray-400 text-xl"></i>
                 </div>
                 <div>
                   <div className="text-xs text-gray-400">LOAD</div>
-                  <div className="text-xl font-bold text-purple-400">{data.load_sensor}%</div>
+                  <div className="text-xl font-bold text-gray-400">{data.load_sensor}%</div>
                 </div>
               </div>
 
               <div className="bg-gray-800 rounded-lg p-4 flex items-center border border-gray-700">
                 <div className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center mr-3">
-                  <i className="fas fa-water text-blue-400 text-xl"></i>
+                  <i className="fas fa-water text-gray-400 text-xl"></i>
                 </div>
                 <div>
                   <div className="text-xs text-gray-400">DEPTH</div>
-                  <div className="text-xl font-bold text-blue-400">{data.depth_sensor}m</div>
+                  <div className="text-xl font-bold text-gray-400">{data.depth_sensor}m</div>
                 </div>
               </div>
             </>
@@ -325,13 +355,13 @@ export default function Dashboard() {
           <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold text-gray-100">Overall Health</h3>
-              <i className="fas fa-ship text-green-400"></i>
+              <i className="fas fa-ship text-gray-400"></i>
             </div>
 
             <div className="flex justify-center">
               {!data ? (
                 <div className="flex items-center justify-center w-32 h-32">
-                  <Spinner variant="dual-ring" size="xl" color="success" />
+                  <Spinner variant="dual-ring" size="xl" color="primary" />
                 </div>
               ) : (
                 <div className="relative flex items-center justify-center w-32 h-32">
@@ -342,7 +372,7 @@ export default function Dashboard() {
                       r="45%"
                       stroke="currentColor"
                       strokeWidth="10"
-                      className="text-gray-700"
+                      className="text-sky-300"
                       fill="transparent"
                     />
                     <circle
@@ -352,13 +382,13 @@ export default function Dashboard() {
                       stroke="currentColor"
                       strokeWidth="10"
                       strokeLinecap="round"
-                      className="text-green-500"
+                      className="text-gray-500"
                       strokeDasharray="282.6"
                       strokeDashoffset={data.overall_health && data.overall_health.length > 0 ? 282.6 - (data.overall_health[data.overall_health.length - 1] / 100) * 282.6 : 50}
                       fill="transparent"
                     />
                   </svg>
-                  <span className="absolute text-2xl font-bold text-green-400">
+                  <span className="absolute text-2xl font-bold text-gray-400">
                     {data.overall_health && data.overall_health.length > 0 ? `${data.overall_health[data.overall_health.length - 1]}%` : '82%'}
                   </span>
                 </div>
@@ -368,7 +398,7 @@ export default function Dashboard() {
             <div className="mt-6 text-center text-sm">
               <div className="flex justify-between">
                 <span className="text-green-400">Optimal</span>
-                <span className="text-yellow-400">Warning</span>
+                <span className="text-purple-400">Warning</span>
                 <span className="text-red-400">Critical</span>
               </div>
             </div>
@@ -512,10 +542,10 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <svg className="progress-ring" viewBox="0 0 100 100">
-                  <circle className="text-gray-700" strokeWidth="8" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50" />
+                  <circle className="text-gray-500" strokeWidth="8" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50" />
                   <circle 
                     ref={progressCircleRef} 
-                    className="progress-ring-circle text-green-500" 
+                    className="progress-ring-circle text-sky-300" 
                     strokeWidth="8" 
                     strokeDasharray="251.2" 
                     strokeDashoffset={parseInt(data.maintenance.next_service) ? 251.2 - (parseInt(data.maintenance.next_service) / 100) * 251.2 : 75.36} 
@@ -532,7 +562,7 @@ export default function Dashboard() {
                     y="50" 
                     textAnchor="middle" 
                     dy=".3em" 
-                    className="text-xl font-bold fill-current text-green-400"
+                    className="text-xl font-bold fill-current text-gray-400"
                   >
                     {data.maintenance.next_service}%
                   </text>
@@ -594,14 +624,14 @@ export default function Dashboard() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           <div className="bg-gray-800 rounded-lg p-4 flex flex-col items-center justify-center h-28 border border-gray-700 transform transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-green-500/20">
             <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center mb-2">
-              <i className="fas fa-cogs text-green-400"></i>
+              <i className="fas fa-cogs text-gray-400"></i>
             </div>
             <div className="text-xs text-center font-medium text-gray-100">Engine & Propulsion</div>
           </div>
 
           <div className="bg-gray-800 rounded-lg p-4 flex flex-col items-center justify-center h-28 border border-gray-700">
             <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center mb-2">
-              <i className="fas fa-arrow-down text-blue-400"></i>
+              <i className="fas fa-arrow-down text-gray-400"></i>
             </div>
             <div className="text-xs text-center font-medium text-gray-100">Suction System</div>
           </div>

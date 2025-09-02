@@ -4,7 +4,8 @@ import {
   Skeleton,
   ChartSkeleton,
   MetricCardSkeleton,
-  GaugeSkeleton
+  // GaugeSkeleton,
+  Spinner
 } from "../components";
 import "../styles/engine.propulsion.css";
 import Chart from "chart.js/auto";
@@ -53,316 +54,360 @@ export default function EnginePropulsion() {
 
 
 
-useEffect(() => {
-  const charts: Record<string, Chart> = {};
+  useEffect(() => {
+    const charts: Record<string, Chart> = {};
 
-  const reg = (id: string, ch: Chart) => {
-    charts[id]?.destroy();
-    charts[id] = ch;
-  };
+    const reg = (id: string, ch: Chart) => {
+      charts[id]?.destroy();
+      charts[id] = ch;
+    };
 
-  const destroyAll = () => {
-    Object.values(charts).forEach(c => c.destroy());
-  };
+    const destroyAll = () => {
+      Object.values(charts).forEach(c => c.destroy());
+    };
 
-  const line = (id: string, data: number[], color: string) => {
-    const el = document.getElementById(id) as HTMLCanvasElement | null;
-    if (!el) return;
-    const ctx = el.getContext("2d");
-    if (!ctx) return;
-
-    Chart.getChart(el)?.destroy();
-
-    const ch = new Chart(ctx, {
-      type: "line",
-      data: {
-        labels: Array(data.length).fill(""),
-        datasets: [{
-          data,
-          borderColor: color,
-          borderWidth: 2,
-          tension: 0.4,
-          fill: false,
-          pointRadius: 0
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { display: false },
-          y: {
-            display: false,
-            min: Math.min(...data) - 5,
-            max: Math.max(...data) + 5
-          }
-        }
+    const getCssVar = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    const toRgba = (hexOrRgb: string, alpha: number) => {
+      const c = hexOrRgb;
+      if (c.startsWith('#')) {
+        const bigint = parseInt(c.slice(1), 16);
+        const r = (bigint >> 16) & 255;
+        const g = (bigint >> 8) & 255;
+        const b = bigint & 255;
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
       }
-    });
-
-    reg(id, ch);
-  };
-
-  const spark = (id: string, data: number[], color: string) => {
-    const el = document.getElementById(id) as HTMLCanvasElement | null;
-    if (!el) return;
-    const ctx = el.getContext("2d");
-    if (!ctx) return;
-
-    Chart.getChart(el)?.destroy();
-
-    const ch = new Chart(ctx, {
-      type: "line",
-      data: {
-        labels: Array(data.length).fill(""),
-        datasets: [{
-          data,
-          borderColor: color,
-          borderWidth: 1,
-          tension: 0.1,
-          fill: false,
-          pointRadius: 0
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { display: false },
-          y: {
-            display: false,
-            min: Math.min(...data) - 0.5,
-            max: Math.max(...data) + 0.5
-          }
-        }
+      if (c.startsWith('rgb')) {
+        return c.replace('rgb', 'rgba').replace(')', `, ${alpha})`);
       }
-    });
+      return c;
+    };
 
-    reg(id, ch);
-  };
+    const line = (id: string, data: number[], color: string) => {
+      const el = document.getElementById(id) as HTMLCanvasElement | null;
+      if (!el) return;
+      const ctx = el.getContext("2d");
+      if (!ctx) return;
 
-  const bar = (id: string, labels: string[], data: number[], colors: string[]) => {
-    const el = document.getElementById(id) as HTMLCanvasElement | null;
-    if (!el) return;
-    const ctx = el.getContext("2d");
-    if (!ctx) return;
+      Chart.getChart(el)?.destroy();
 
-    Chart.getChart(el)?.destroy();
+      const textColor = getCssVar('--text-secondary') || '#9ca3af';
+      const gridColor = toRgba(getCssVar('--text-secondary') || '#9ca3af', 0.3);
 
-    const ch = new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels,
-        datasets: [{
-          data,
-          backgroundColor: colors,
-          borderWidth: 0
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: {
-            grid: { display: false },
-            border: { display: false },
-            ticks: { color: '#a0a0a0' }
-          },
-          y: {
-            min: 50,
-            max: 80,
-            grid: { color: '#2a2a2a' },
-            border: { display: false },
-            ticks: { color: '#a0a0a0' }
-          }
-        }
-      }
-    });
-
-    reg(id, ch);
-  };
-
-  const createPressureGauge = (id: string, value: number, maxValue: number, color: string) => {
-    const el = document.getElementById(id) as HTMLCanvasElement | null;
-    if (!el) return;
-    const ctx = el.getContext("2d");
-    if (!ctx) return;
-
-    Chart.getChart(el)?.destroy();
-
-    const percentage = Math.min(100, (value / maxValue) * 100);
-
-    const ch = new Chart(ctx, {
-      type: "doughnut",
-      data: {
-        datasets: [{
-          data: [percentage, 100 - percentage],
-          backgroundColor: [color, "#374151"],
-          borderWidth: 0
-        }]
-      },
-      options: {
-        circumference: 270,
-        rotation: 225,
-        cutout: "80%",
-        plugins: {
-          legend: { display: false },
-          tooltip: { enabled: false }
+      const ch = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: Array(data.length).fill(""),
+          datasets: [{
+            data,
+            borderColor: color,
+            borderWidth: 2,
+            tension: 0.4,
+            fill: false,
+            pointRadius: 0
+          }]
         },
-        responsive: true,
-        maintainAspectRatio: false
-      }
-    });
-
-    reg(id, ch);
-    return ch;
-  };
-
-  const trend = (exhaustTemps: number[]) => {
-    const el = document.getElementById("trendChart") as HTMLCanvasElement | null;
-    if (!el) return;
-    const ctx = el.getContext("2d");
-    if (!ctx) return;
-
-    Chart.getChart(el)?.destroy();
-
-    const labels: string[] = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      labels.push(d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-    }
-
-    const ch = new Chart(ctx, {
-      type: "line",
-      data: {
-        labels,
-        datasets: [{
-          label: "Exhaust Gas Temperature (°C)",
-          data: exhaustTemps,
-          borderColor: "#ff5555",
-          borderWidth: 2,
-          tension: 0.3,
-          fill: false,
-          pointBackgroundColor: "#ff5555",
-          pointRadius: 3,
-          pointHoverRadius: 5
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: {
-            grid: { color: '#2a2a2a' },
-            ticks: { color: '#a0a0a0' }
-          },
-          y: {
-            grid: { color: '#2a2a2a' },
-            ticks: { color: '#a0a0a0' }
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { display: false, grid: { color: gridColor }, ticks: { color: textColor } },
+            y: {
+              display: false,
+              min: Math.min(...data) - 5,
+              max: Math.max(...data) + 5,
+              grid: { color: gridColor },
+              ticks: { color: textColor }
+            }
           }
         }
+      });
+
+      reg(id, ch);
+    };
+
+    const spark = (id: string, data: number[], color: string) => {
+      const el = document.getElementById(id) as HTMLCanvasElement | null;
+      if (!el) return;
+      const ctx = el.getContext("2d");
+      if (!ctx) return;
+
+      Chart.getChart(el)?.destroy();
+
+      const textColor = getCssVar('--text-secondary') || '#9ca3af';
+      const gridColor = toRgba(getCssVar('--text-secondary') || '#9ca3af', 0.3);
+
+      const ch = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: Array(data.length).fill(""),
+          datasets: [{
+            data,
+            borderColor: color,
+            borderWidth: 1,
+            tension: 0.1,
+            fill: false,
+            pointRadius: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { display: false, grid: { color: gridColor }, ticks: { color: textColor } },
+            y: {
+              display: false,
+              min: Math.min(...data) - 0.5,
+              max: Math.max(...data) + 0.5,
+              grid: { color: gridColor },
+              ticks: { color: textColor }
+            }
+          }
+        }
+      });
+
+      reg(id, ch);
+    };
+
+    const bar = (id: string, labels: string[], data: number[], colors: string[]) => {
+      const el = document.getElementById(id) as HTMLCanvasElement | null;
+      if (!el) return;
+      const ctx = el.getContext("2d");
+      if (!ctx) return;
+
+      Chart.getChart(el)?.destroy();
+
+      const textColor = getCssVar('--text-secondary') || '#9ca3af';
+      const gridColor = toRgba(getCssVar('--text-secondary') || '#9ca3af', 0.3);
+
+      const ch = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [{
+            data,
+            backgroundColor: colors,
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              grid: { display: false },
+              border: { display: false },
+              ticks: { color: textColor }
+            },
+            y: {
+              min: 50,
+              max: 80,
+              grid: { color: gridColor },
+              border: { display: false },
+              ticks: { color: textColor }
+            }
+          }
+        }
+      });
+
+      reg(id, ch);
+    };
+
+    const createPressureGauge = (id: string, value: number, maxValue: number, color: string) => {
+      const el = document.getElementById(id) as HTMLCanvasElement | null;
+      if (!el) return;
+      const ctx = el.getContext("2d");
+      if (!ctx) return;
+
+      Chart.getChart(el)?.destroy();
+
+      const percentage = Math.min(100, (value / maxValue) * 100);
+
+      const bgTrack = getCssVar('--hover-bg') || '#374151';
+      const ch = new Chart(ctx, {
+        type: "doughnut",
+        data: {
+          datasets: [{
+            data: [percentage, 100 - percentage],
+            backgroundColor: [color, bgTrack],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          circumference: 270,
+          rotation: 225,
+          cutout: "80%",
+          plugins: {
+            legend: { display: false },
+            tooltip: { enabled: false }
+          },
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+
+      reg(id, ch);
+      return ch;
+    };
+
+    const trend = (exhaustTemps: number[]) => {
+      const el = document.getElementById("trendChart") as HTMLCanvasElement | null;
+      if (!el) return;
+      const ctx = el.getContext("2d");
+      if (!ctx) return;
+
+      Chart.getChart(el)?.destroy();
+
+      const labels: string[] = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        labels.push(d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
       }
-    });
 
-    reg("trendChart", ch);
-  };
+      const textColor = getCssVar('--text-secondary') || '#9ca3af';
+      const gridColor = toRgba(getCssVar('--text-secondary') || '#9ca3af', 0.3);
 
-  const fetchData = async () => {
-    console.log("data fetching...");
-    try {
-      setLoading(true);
-      const response: any = await getEnginePropulsion();
-      if (response.data && response.data.length > 0) {
-        const engineData = response.data[0];
-        setData(engineData);
-        return engineData;
+      const ch = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [{
+            label: "Exhaust Gas Temperature (°C)",
+            data: exhaustTemps,
+            borderColor: "#ff5555",
+            borderWidth: 2,
+            tension: 0.3,
+            fill: false,
+            pointBackgroundColor: "#ff5555",
+            pointRadius: 3,
+            pointHoverRadius: 5
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              grid: { color: gridColor },
+              ticks: { color: textColor }
+            },
+            y: {
+              grid: { color: gridColor },
+              ticks: { color: textColor }
+            }
+          }
+        }
+      });
+
+      reg("trendChart", ch);
+    };
+
+    const fetchData = async () => {
+      console.log("data fetching...");
+      try {
+        setLoading(true);
+        const response: any = await getEnginePropulsion();
+        if (response.data && response.data.length > 0) {
+          const engineData = response.data[0];
+          setData(engineData);
+          return engineData;
+        }
+      } catch (err) {
+        console.error("Error fetching engine propulsion data:", err);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error("Error fetching engine propulsion data:", err);
-    } finally {
-      setLoading(false);
-    }
-    return null;
-  };
+      return null;
+    };
 
-  const fetchDataAndUpdateCharts = async (engineData: any) => {
-    try {
-      setLoading(true);
-      if (!engineData) return;
+    const fetchDataAndUpdateCharts = async (engineData: any) => {
+      try {
+        setLoading(true);
+        if (!engineData) return;
 
-      if (engineData.temperature_and_pressure.exhaust_gas_temp) {
-        line("exhaustTempChart", engineData.temperature_and_pressure.exhaust_gas_temp, "#ff5555");
+        if (engineData.temperature_and_pressure.exhaust_gas_temp) {
+          line("exhaustTempChart", engineData.temperature_and_pressure.exhaust_gas_temp, "#ff5555");
+        }
+
+        if (engineData.temperature_and_pressure.cooling_water_temp) {
+          line("coolingTempChart", engineData.temperature_and_pressure.cooling_water_temp, "#55aaff");
+        }
+
+        if (engineData.temperature_and_pressure.lube_oil_temp) {
+          line("lubeTempChart", engineData.temperature_and_pressure.lube_oil_temp, "#ffaa55");
+        }
+
+        if (engineData.vibration_and_bearing.engine_vibration) {
+          spark("engineVibrationChart", engineData.vibration_and_bearing.engine_vibration, "#00ff00");
+        }
+
+        if (engineData.vibration_and_bearing.shaft_bearing_vibration) {
+          spark("shaftVibrationChart", engineData.vibration_and_bearing.shaft_bearing_vibration, "#00ff00");
+        }
+
+        if (engineData.vibration_and_bearing.bearing_temperatures) {
+          const bearingLabels = ['Fore Bearing', 'Aft Bearing', 'Thruster B1', 'Thruster B2'];
+          const bearingColors = engineData.vibration_and_bearing.bearing_temperatures.map((value: number) => {
+            if (value < 70) return '#00ff00';
+            if (value < 80) return '#ffff00';
+            return '#ff0000';
+          });
+          bar("bearingTempChart", bearingLabels, engineData.vibration_and_bearing.bearing_temperatures, bearingColors);
+        }
+
+        if (engineData.temperature_and_pressure.fuel_pressure) {
+          const fuelValue = getCurrentValue(engineData.temperature_and_pressure.fuel_pressure, 0);
+          createPressureGauge("fuelPressureGauge", fuelValue, 5.0, "#10b981");
+        }
+
+        if (engineData.temperature_and_pressure.lube_oil_pressure) {
+          const lubeValue = getCurrentValue(engineData.temperature_and_pressure.lube_oil_pressure, 0);
+          createPressureGauge("lubePressureGauge", lubeValue, 4.5, "#3b82f6");
+        }
+
+        if (engineData.temperature_and_pressure.exhaust_gas_temp) {
+          trend(engineData.temperature_and_pressure.exhaust_gas_temp);
+        }
+
+      } catch (err) {
+        console.error("Error updating charts:", err);
+      } finally {
+        setLoading(false);
       }
+    };
 
-      if (engineData.temperature_and_pressure.cooling_water_temp) {
-        line("coolingTempChart", engineData.temperature_and_pressure.cooling_water_temp, "#55aaff");
-      }
+    // 👇 Main async runner
+    const init = async () => {
+      const engineData = await fetchData(); // Step 1
+      setTimeout(() => {
+        (async () => {
+          await fetchDataAndUpdateCharts(engineData);
+        })();
+      }, 100);
+      // Step 2
+    };
 
-      if (engineData.temperature_and_pressure.lube_oil_temp) {
-        line("lubeTempChart", engineData.temperature_and_pressure.lube_oil_temp, "#ffaa55");
-      }
+    init(); // 👈 fire the flow
 
-      if (engineData.vibration_and_bearing.engine_vibration) {
-        spark("engineVibrationChart", engineData.vibration_and_bearing.engine_vibration, "#00ff00");
-      }
+    const onThemeChange = async () => {
+      const engineData = await fetchData();
+      setTimeout(() => {
+        (async () => {
+          await fetchDataAndUpdateCharts(engineData);
+        })();
+      }, 100);
+    };
+    window.addEventListener('themechange', onThemeChange);
 
-      if (engineData.vibration_and_bearing.shaft_bearing_vibration) {
-        spark("shaftVibrationChart", engineData.vibration_and_bearing.shaft_bearing_vibration, "#00ff00");
-      }
-
-      if (engineData.vibration_and_bearing.bearing_temperatures) {
-        const bearingLabels = ['Fore Bearing', 'Aft Bearing', 'Thruster B1', 'Thruster B2'];
-        const bearingColors = engineData.vibration_and_bearing.bearing_temperatures.map((value: number) => {
-          if (value < 70) return '#00ff00';
-          if (value < 80) return '#ffff00';
-          return '#ff0000';
-        });
-        bar("bearingTempChart", bearingLabels, engineData.vibration_and_bearing.bearing_temperatures, bearingColors);
-      }
-
-      if (engineData.temperature_and_pressure.fuel_pressure) {
-        const fuelValue = getCurrentValue(engineData.temperature_and_pressure.fuel_pressure, 0);
-        createPressureGauge("fuelPressureGauge", fuelValue, 5.0, "#10b981");
-      }
-
-      if (engineData.temperature_and_pressure.lube_oil_pressure) {
-        const lubeValue = getCurrentValue(engineData.temperature_and_pressure.lube_oil_pressure, 0);
-        createPressureGauge("lubePressureGauge", lubeValue, 4.5, "#3b82f6");
-      }
-
-      if (engineData.temperature_and_pressure.exhaust_gas_temp) {
-        trend(engineData.temperature_and_pressure.exhaust_gas_temp);
-      }
-
-    } catch (err) {
-      console.error("Error updating charts:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 👇 Main async runner
-  const init = async () => {
-    const engineData = await fetchData(); // Step 1
-    setTimeout(() => {
-    (async () => {
-        await fetchDataAndUpdateCharts(engineData);
-    })();
-}, 5000);
- // Step 2
-  };
-
-  init(); // 👈 fire the flow
-
-  return () => {
-    destroyAll(); // 👈 clean up on unmount
-  };
-}, []);
+    return () => {
+      destroyAll(); // 👈 clean up on unmount
+      window.removeEventListener('themechange', onThemeChange);
+    };
+  }, []);
 
   const getCurrentValue = (values: number[] | undefined, fallback: number) => {
     return values && values.length > 0 ? values[values.length - 1] : fallback;
@@ -572,7 +617,7 @@ useEffect(() => {
                       <div key={i}>
                         <Skeleton variant="text" className="w-1/3 mb-2" />
                         <div className="h-32 flex items-center justify-center">
-                          <GaugeSkeleton size="md" />
+                          <Spinner variant="dual-ring" size="xl" color="primary" />
                         </div>
                         <Skeleton variant="text" className="w-full text-center mt-1" />
                       </div>
@@ -609,11 +654,11 @@ useEffect(() => {
                   <>
                     {[1, 2].map((i) => (
                       <div key={i}>
-                        <Skeleton variant="text" className="w-1/3 mb-2" />
+                        <Spinner variant="dual-ring" size="xl" color="primary" />
                         <div className="h-32 flex items-center justify-center">
-                          <GaugeSkeleton size="md" />
+                          <Spinner variant="dual-ring" size="xl" color="primary" />
                         </div>
-                        <Skeleton variant="text" className="w-full text-center mt-1" />
+                        <Spinner variant="dual-ring" size="xl" color="primary" />
                       </div>
                     ))}
                   </>
