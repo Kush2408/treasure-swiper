@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
-import {Skeleton, ChartSkeleton, MetricCardSkeleton } from "../components";
+import { Skeleton, ChartSkeleton, MetricCardSkeleton } from "../components";
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { SuctionSystemService, type SuctionSystemData } from "../services/suctionSystemService";
 import "../styles/suction-system.css";
@@ -82,7 +82,7 @@ export default function SuctionSystem() {
         )} */}
 
         {/* Status Overview */}
-        <div className="p-4 border-b border-gray-700 grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div className="p-4 border-b border-gray-700 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {loading ? (
             <>
               <MetricCardSkeleton />
@@ -153,6 +153,7 @@ export default function SuctionSystem() {
             </>
           )}
         </div>
+
 
         {/* Main Content Area */}
         <div className="flex-1 overflow-y-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-4">

@@ -35,13 +35,13 @@ export default function Dashboard() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      
+
       console.log("Fetching dashboard data...");
       const dashboardData = await dashboardService.getDashboardData();
-      
+
       console.log("Dashboard data received:", dashboardData);
       setData(dashboardData);
-      
+
     } catch (err) {
       console.error("Error fetching dashboard data:", err);
       // Still set data to null and loading to false to show skeletons
@@ -73,46 +73,46 @@ export default function Dashboard() {
           data: {
             labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
             datasets: [
-              { 
-                label: 'Efficiency', 
-                data: data.performance_metrics.efficiency_performance_metrics, 
-                borderColor: '#10b981', 
-                backgroundColor: 'rgba(16, 185, 129, 0.1)', 
-                borderWidth: 2, 
-                tension: 0.4, 
-                fill: true 
+              {
+                label: 'Efficiency',
+                data: data.performance_metrics.efficiency_performance_metrics,
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                borderWidth: 2,
+                tension: 0.4,
+                fill: true
               },
-              { 
-                label: 'Power Output', 
-                data: data.performance_metrics.power_output_trend, 
-                borderColor: '#3b82f6', 
-                backgroundColor: 'rgba(59, 130, 246, 0.1)', 
-                borderWidth: 2, 
-                tension: 0.4, 
-                fill: true 
+              {
+                label: 'Power Output',
+                data: data.performance_metrics.power_output_trend,
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                borderWidth: 2,
+                tension: 0.4,
+                fill: true
               }
             ]
           },
           options: {
-            responsive: true, 
+            responsive: true,
             maintainAspectRatio: false,
-            plugins: { 
-              legend: { 
-                position: 'top', 
-                labels: { 
-                  color: textColor, 
-                  font: { family: 'Roboto Mono' } 
-                } 
-              } 
+            plugins: {
+              legend: {
+                position: 'top',
+                labels: {
+                  color: textColor,
+                  font: { family: 'Roboto Mono' }
+                }
+              }
             },
             scales: {
-              x: { 
-                grid: { color: gridColor }, 
-                ticks: { color: textColor } 
+              x: {
+                grid: { color: gridColor },
+                ticks: { color: textColor }
               },
-              y: { 
-                grid: { color: gridColor }, 
-                ticks: { color: textColor } 
+              y: {
+                grid: { color: gridColor },
+                ticks: { color: textColor }
               }
             }
           }
@@ -128,27 +128,27 @@ export default function Dashboard() {
           const baseLat = 51.8875;
           const baseLon = 4.3575;
           const positions = [];
-          
+
           const healthData = data.overall_health || [85, 87, 89, 88, 90, 92, 91];
-          
+
           for (let i = 0; i < healthData.length; i++) {
             const health = healthData[i];
             const stability = health / 100;
             const latVariation = (Math.random() - 0.5) * 0.001 * (1 - stability);
             const lonVariation = (Math.random() - 0.5) * 0.001 * (1 - stability);
-            
+
             positions.push({
               lat: baseLat + latVariation,
               lon: baseLon + lonVariation,
               timestamp: `${i * 4}:00`
             });
           }
-          
+
           return positions;
         };
 
         const vesselData = generateVesselData();
-        
+
         portLocationChart = new Chart(ctx, {
           type: "scatter",
           data: {
@@ -193,7 +193,7 @@ export default function Dashboard() {
               },
               tooltip: {
                 callbacks: {
-                  label: function(context) {
+                  label: function (context) {
                     const dataIndex = context.dataIndex;
                     if (context.datasetIndex === 0 && vesselData[dataIndex]) {
                       return `Vessel: ${vesselData[dataIndex].timestamp}`;
@@ -233,8 +233,8 @@ export default function Dashboard() {
 
     const interval = setInterval(() => {
       if (gaugeValueRef.current) {
-        const healthValue = data.overall_health && data.overall_health.length > 0 
-          ? data.overall_health[data.overall_health.length - 1] 
+        const healthValue = data.overall_health && data.overall_health.length > 0
+          ? data.overall_health[data.overall_health.length - 1]
           : 85;
         gaugeValueRef.current.textContent = `${healthValue}%`;
       }
@@ -256,9 +256,9 @@ export default function Dashboard() {
     };
     window.addEventListener('themechange', onThemeChange);
 
-    return () => { 
-      clearInterval(interval); 
-      if (chart) chart.destroy(); 
+    return () => {
+      clearInterval(interval);
+      if (chart) chart.destroy();
       if (portLocationChart) portLocationChart.destroy();
       window.removeEventListener('themechange', onThemeChange);
     };
@@ -277,7 +277,7 @@ export default function Dashboard() {
         )} */}
 
         {/* Top Metrics Row */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6 relative z-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-6 relative z-10">
           {loading ? (
             <>
               <MetricCardSkeleton />
@@ -348,6 +348,7 @@ export default function Dashboard() {
             </>
           )}
         </div>
+
 
         {/* Dashboard Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
@@ -543,25 +544,25 @@ export default function Dashboard() {
               ) : (
                 <svg className="progress-ring" viewBox="0 0 100 100">
                   <circle className="text-gray-500" strokeWidth="8" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50" />
-                  <circle 
-                    ref={progressCircleRef} 
-                    className="progress-ring-circle text-sky-300" 
-                    strokeWidth="8" 
-                    strokeDasharray="251.2" 
-                    strokeDashoffset={parseInt(data.maintenance.next_service) ? 251.2 - (parseInt(data.maintenance.next_service) / 100) * 251.2 : 75.36} 
-                    strokeLinecap="round" 
-                    stroke="currentColor" 
-                    fill="transparent" 
-                    r="40" 
-                    cx="50" 
-                    cy="50" 
+                  <circle
+                    ref={progressCircleRef}
+                    className="progress-ring-circle text-sky-300"
+                    strokeWidth="8"
+                    strokeDasharray="251.2"
+                    strokeDashoffset={parseInt(data.maintenance.next_service) ? 251.2 - (parseInt(data.maintenance.next_service) / 100) * 251.2 : 75.36}
+                    strokeLinecap="round"
+                    stroke="currentColor"
+                    fill="transparent"
+                    r="40"
+                    cx="50"
+                    cy="50"
                   />
-                  <text 
-                    ref={progressTextRef as any} 
-                    x="50" 
-                    y="50" 
-                    textAnchor="middle" 
-                    dy=".3em" 
+                  <text
+                    ref={progressTextRef as any}
+                    x="50"
+                    y="50"
+                    textAnchor="middle"
+                    dy=".3em"
                     className="text-xl font-bold fill-current text-gray-400"
                   >
                     {data.maintenance.next_service}%
