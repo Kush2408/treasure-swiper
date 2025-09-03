@@ -21,6 +21,46 @@
   .sidebar-wrapper { width: 100%; }
   @media (min-width: 1024px){ .sidebar-wrapper{ width:16.6667%; } }
   
+  .sidebar-wrapper {
+  width: 100%; /* default for mobile */
+  max-width: 280px; /* prevent sidebar from being too wide */
+  flex-shrink: 0;
+}
+
+/* Tablet (≥640px) */
+@media (min-width: 640px) {
+  .sidebar-wrapper {
+    width: 40%; /* sidebar takes 40% */
+    max-width: 300px;
+  }
+}
+
+/* Medium screens (≥768px) */
+@media (min-width: 768px) {
+  .sidebar-wrapper {
+    width: 30%;
+    max-width: 320px;
+  }
+}
+
+/* Large screens (≥1024px) */
+@media (min-width: 1024px) {
+  .sidebar-wrapper {
+    width: 20%;
+    max-width: 350px;
+  }
+}
+
+/* Extra large screens (≥1280px) */
+@media (min-width: 1280px) {
+  .sidebar-wrapper {
+    width: 16.6667%; /* one-sixth */
+    max-width: 380px;
+  }
+}
+
+
+
   .sidebar {
     height: 100%;
     padding: 1rem;
