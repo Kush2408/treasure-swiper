@@ -1,7 +1,7 @@
 import axios from "axios";
 
-// Environment configuration
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+// Environment configuration with fallback
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://192.168.10.251:8005/api/v1'
 
 // Create axios instance with proper configuration
 const api = axios.create({
@@ -101,6 +101,11 @@ export const predictiveAnalysisService = {
       console.error("Error fetching predictive analysis data:", error);
       throw new Error("Failed to fetch predictive analysis data");
     }
+  },
+
+  // Get SSE URL for real-time predictive analysis data
+  getSSEUrl(): string {
+    return `${API_BASE_URL}/predictive-analysis`;
   },
 
   // Method to test API connectivity

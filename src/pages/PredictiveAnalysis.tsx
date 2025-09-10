@@ -3,14 +3,106 @@ import Sidebar from "../components/Sidebar";
 import { Skeleton, ChartSkeleton, Spinner } from "../components";
 import Chart from "chart.js/auto";
 import type { Chart as ChartJS } from "chart.js";
+import { useSSE } from "../hooks/useSSE";
 import { predictiveAnalysisService } from "../services/predictiveAnalysisService";
 import "../styles/predictive.css";
 
+// TypeScript interfaces for API response sections
+interface SystemOverview {
+  engine_health: number;
+  suction_efficiency: number;
+  dredging_efficiency: number;
+}
+
+interface EngineHealthTrend {
+  engine_health_trend: number[];
+}
+
+interface SuctionEfficiencyTrend {
+  suction_efficiency_trend: number[];
+}
+
+interface DredgingPerformance {
+  dredging_performance: number[];
+}
+
+interface EnginePropulsionHealth {
+  thermal_stress_index: number;
+  mechanical_efficiency: number;
+  cooling_efficiency: number;
+  propulsion_alignment: number;
+}
+
+interface SuctionSystemPerformance {
+  pressure_fluctuation: number;
+  cutter_resistance: number;
+  turbidity_to_torque: number;
+  flow_stability_factor: number;
+}
+
+interface PredictiveMaintenanceForecast {
+  engine_health_score: number[];
+}
+
+interface PerformancePredictiveTrends {
+  dredging_efficiency: number[];
+  turbidity_efficiency: number[];
+}
+
+interface SystemDetailedMetrics {
+  shaft_rpm: number[];
+  engine_rpm: number[];
+  bearing_temp: number[];
+  pressure: number[];
+  turbidity: number[];
+  cutter_torque: number[];
+}
+
+interface PredictiveAnalysisData {
+  system_overview: SystemOverview;
+  engine_health_trend: EngineHealthTrend;
+  suction_efficiency_trend: SuctionEfficiencyTrend;
+  dredging_performance: DredgingPerformance;
+  engine_propulsion_health: EnginePropulsionHealth;
+  suction_system_performance: SuctionSystemPerformance;
+  predictive_maintenance_forecast: PredictiveMaintenanceForecast;
+  performance_predictive_trends: PerformancePredictiveTrends;
+  system_detailed_metrics: SystemDetailedMetrics;
+}
+
+// Data normalization utility
+const normalizeApiData = (raw: any): PredictiveAnalysisData | null => {
+  if (!raw) return null;
+  
+  // If response is wrapped in a data array, take the first element
+  if (Array.isArray(raw.data)) {
+    return raw.data[0] || null;
+  }
+  
+  // If response has a data property, use it
+  if (raw.data) {
+    return raw.data;
+  }
+  
+  // If response is the data itself
+  return raw;
+};
+
 export default function PredictiveAnalysis() {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  // const [error, setError] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState("00:00:00");
+
+  // Use SSE for real-time data updates
+  const { data: rawData, loading } = useSSE<any>(predictiveAnalysisService.getSSEUrl(), {
+    onMessage: (newData) => {
+      console.log("Predictive analysis data received via SSE:", newData);
+    },
+    onError: (error) => {
+      console.error("SSE connection error for predictive analysis:", error);
+    }
+  });
+
+  // Normalize the data to handle both array and object responses
+  const data = normalizeApiData(rawData);
 
   // Chart registry for cleanup
   const charts: Record<string, ChartJS> = {};
@@ -21,36 +113,6 @@ export default function PredictiveAnalysis() {
   };
   const destroyAll = () => Object.values(charts).forEach(c => c.destroy());
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      // setError(null);
-
-      console.log("Fetching predictive analysis data...");
-      const analysisData = await predictiveAnalysisService.getPredictiveAnalysis();
-
-      console.log("Predictive analysis data received:", analysisData);
-
-      if (analysisData) {
-        setData(analysisData);
-        console.log('Data set successfully:', analysisData);
-      } else {
-        // setError("No data received from API");
-        console.log('No data received from API');
-      }
-
-    } catch (err) {
-      // const errorMessage = err instanceof Error ? err.message : "Failed to fetch data";
-      // // setError(errorMessage);
-      // console.error("Error fetching predictive analysis data:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   useEffect(() => {
     // Update current time
@@ -86,7 +148,7 @@ export default function PredictiveAnalysis() {
     };
 
     // Update gauges with real API data
-    if (data.system_overview) {
+    if (data?.system_overview) {
       updateGauge('engine-health-gauge', data.system_overview.engine_health, 'engine-health-value');
       updateGauge('suction-efficiency-gauge', data.system_overview.suction_efficiency, 'suction-efficiency-value');
       updateGauge('overall-efficiency-gauge', data.system_overview.dredging_efficiency, 'overall-efficiency-value');
@@ -169,7 +231,7 @@ export default function PredictiveAnalysis() {
       gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
 
       // Use real API data for maintenance forecast
-      const forecastData = data.predictive_maintenance_forecast?.engine_health_score || [0.8, 0.85, 0.9, 0.88, 0.92];
+      const forecastData = data?.predictive_maintenance_forecast?.engine_health_score || [0.8, 0.85, 0.9, 0.88, 0.92];
 
       return reg(canvasId, new Chart(ctx, {
         type: 'line',
@@ -220,8 +282,8 @@ export default function PredictiveAnalysis() {
       gradient.addColorStop(1, 'rgba(16, 185, 129, 0)');
 
       // Use real API data for performance trends
-      const dredgingData = data.performance_predictive_trends?.dredging_efficiency || [0.04, 0.045, 0.05, 0.048, 0.052];
-      const turbidityData = data.performance_predictive_trends?.turbidity_efficiency || [0.03, 0.035, 0.04, 0.038, 0.042];
+      const dredgingData = data?.performance_predictive_trends?.dredging_efficiency || [0.04, 0.045, 0.05, 0.048, 0.052];
+      const turbidityData = data?.performance_predictive_trends?.turbidity_efficiency || [0.03, 0.035, 0.04, 0.038, 0.042];
 
       return reg(canvasId, new Chart(ctx, {
         type: 'line',
@@ -315,10 +377,10 @@ export default function PredictiveAnalysis() {
 
     // Create charts with real API data only
     // Engine Health Trend Chart
-    let engineData = [];
-    if (data.engine_health_trend?.engine_health_trend && data.engine_health_trend.engine_health_trend.length > 0) {
+    let engineData: number[] = [];
+    if (data?.engine_health_trend?.engine_health_trend && data.engine_health_trend.engine_health_trend.length > 0) {
       engineData = data.engine_health_trend.engine_health_trend;
-    } else if (data.system_overview?.engine_health) {
+    } else if (data?.system_overview?.engine_health) {
       engineData = [data.system_overview.engine_health];
     }
     
@@ -333,10 +395,10 @@ export default function PredictiveAnalysis() {
     }
 
     // Suction Efficiency Trend Chart
-    let suctionData = [];
-    if (data.suction_efficiency_trend?.suction_efficiency_trend && data.suction_efficiency_trend.suction_efficiency_trend.length > 0) {
+    let suctionData: number[] = [];
+    if (data?.suction_efficiency_trend?.suction_efficiency_trend && data.suction_efficiency_trend.suction_efficiency_trend.length > 0) {
       suctionData = data.suction_efficiency_trend.suction_efficiency_trend;
-    } else if (data.system_overview?.suction_efficiency) {
+    } else if (data?.system_overview?.suction_efficiency) {
       suctionData = [data.system_overview.suction_efficiency];
     }
     
@@ -351,10 +413,10 @@ export default function PredictiveAnalysis() {
     }
 
     // Dredging Performance Chart
-    let dredgingData = [];
-    if (data.dredging_performance?.dredging_performance && data.dredging_performance.dredging_performance.length > 0) {
+    let dredgingData: number[] = [];
+    if (data?.dredging_performance?.dredging_performance && data.dredging_performance.dredging_performance.length > 0) {
       dredgingData = data.dredging_performance.dredging_performance;
-    } else if (data.system_overview?.dredging_efficiency) {
+    } else if (data?.system_overview?.dredging_efficiency) {
       dredgingData = [data.system_overview.dredging_efficiency];
     }
     
@@ -373,7 +435,7 @@ export default function PredictiveAnalysis() {
     createPerformanceForecastChart('suctionPerformanceForecast');
 
     // Create detailed charts with real API data
-    if (data.system_detailed_metrics) {
+    if (data?.system_detailed_metrics) {
       createDetailedChart('propulsionDetailedChart', 'Propulsion Metrics', [
         {
           label: 'Shaft RPM',
@@ -434,8 +496,8 @@ export default function PredictiveAnalysis() {
 
     const onThemeChange = () => {
       destroyAll();
-      // retrigger creation with same data
-      setData((d:any) => (d ? { ...d } : d));
+      // Charts will be rebuilt when data changes via SSE
+      console.log('Theme changed, charts will update automatically');
     };
     window.addEventListener('themechange', onThemeChange);
 
@@ -464,25 +526,23 @@ export default function PredictiveAnalysis() {
           </div>
         </header>
 
-        {/* Loading Banner */}
-        {/* {loading && (
-          <div className="bg-gray-600 text-white px-4 py-2 flex items-center justify-center space-x-2">
-            <Loader variant="dots" size="sm" color="secondary" />
-            <span className="text-sm font-medium">Loading predictive analysis data...</span>
-          </div>
-        )} */}
-
-        {/* Error Banner */}
+        {/* Connection Status Banner */}
         {/* {error && (
-          <div className="bg-gray-600 text-white px-4 py-2 flex items-center justify-center space-x-2">
-            <i className="fas fa-exclamation-triangle mr-2"></i>
-            <span className="text-sm font-medium">Error : {error}</span>
-            <button
-              onClick={fetchData}
-              className="ml-4 bg-gray-700 hover:bg-gray-800 px-3 py-0 rounded text-sm font-medium"
-            >
-              Retry
-            </button>
+          <div className="bg-red-600 text-white px-4 py-2 flex items-center justify-center space-x-2">
+            <i className="fas fa-exclamation-triangle"></i>
+            <span className="text-sm font-medium">Connection Error: {error}</span>
+          </div>
+        )}
+        {!isConnected && !error && (
+          <div className="bg-yellow-600 text-white px-4 py-2 flex items-center justify-center space-x-2">
+            <i className="fas fa-spinner fa-spin"></i>
+            <span className="text-sm font-medium">Connecting to real-time data stream...</span>
+          </div>
+        )}
+        {isConnected && (
+          <div className="bg-green-600 text-white px-4 py-2 flex items-center justify-center space-x-2">
+            <i className="fas fa-check-circle"></i>
+            <span className="text-sm font-medium">Connected to real-time data stream</span>
           </div>
         )} */}
 
@@ -493,12 +553,6 @@ export default function PredictiveAnalysis() {
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-dark">System Overview</h2>
               <div className="flex space-x-2">
-                <button
-                  onClick={fetchData}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
-                >
-                  Refresh
-                </button>
                 <button className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded text-sm">Settings</button>
               </div>
             </div>
@@ -818,7 +872,7 @@ export default function PredictiveAnalysis() {
                       </div>
                       <div className="flex justify-between items-end">
                         <span className="text-2xl font-bold text-gray-100">
-                          {data.engine_propulsion_health.thermal_stress_index?.toFixed(2) || "N/A"}
+                          {data?.engine_propulsion_health?.thermal_stress_index?.toFixed(2) || "N/A"}
                         </span>
                         <span className="text-sm text-gray-400 flex items-center">
                           <i className="fas fa-caret-up text-yellow-400 mr-1"></i> 12%
@@ -836,7 +890,7 @@ export default function PredictiveAnalysis() {
                       </div>
                       <div className="flex justify-between items-end">
                         <span className="text-2xl font-bold text-gray-100">
-                          {data.engine_propulsion_health.mechanical_efficiency?.toFixed(2) || "N/A"}
+                          {data?.engine_propulsion_health?.mechanical_efficiency?.toFixed(2) || "N/A"}
                         </span>
                         <span className="text-sm text-gray-400 flex items-center">
                           <i className="fas fa-caret-down text-green-400 mr-1"></i> 2%
@@ -854,7 +908,7 @@ export default function PredictiveAnalysis() {
                       </div>
                       <div className="flex justify-between items-end">
                         <span className="text-2xl font-bold text-gray-100">
-                          {data.engine_propulsion_health.cooling_efficiency?.toFixed(2) || "N/A"}
+                          {data?.engine_propulsion_health?.cooling_efficiency?.toFixed(2) || "N/A"}
                         </span>
                         <span className="text-sm text-gray-400 flex items-center">
                           <i className="fas fa-equals text-gray-400 mr-1"></i> 0%
@@ -872,7 +926,7 @@ export default function PredictiveAnalysis() {
                       </div>
                       <div className="flex justify-between items-end">
                         <span className="text-2xl font-bold text-gray-100">
-                          {data.engine_propulsion_health.propulsion_alignment?.toFixed(2) || "N/A"}
+                          {data?.engine_propulsion_health?.propulsion_alignment?.toFixed(2) || "N/A"}
                         </span>
                         <span className="text-sm text-gray-400 flex items-center">
                           <i className="fas fa-caret-down text-red-400 mr-1"></i> 18%
@@ -1044,7 +1098,7 @@ export default function PredictiveAnalysis() {
                       </div>
                       <div className="flex justify-between items-end">
                         <span className="text-2xl font-bold text-gray-100">
-                          {data.suction_system_performance.pressure_fluctuation?.toFixed(6) || "N/A"}
+                          {data?.suction_system_performance?.pressure_fluctuation?.toFixed(6) || "N/A"}
                         </span>
                         <span className="text-sm text-gray-400 flex items-center">
                           <i className="fas fa-caret-down text-green-400 mr-1"></i> 5%
@@ -1062,7 +1116,7 @@ export default function PredictiveAnalysis() {
                       </div>
                       <div className="flex justify-between items-end">
                         <span className="text-2xl font-bold text-gray-100">
-                          {data.suction_system_performance.cutter_resistance?.toFixed(2) || "N/A"}
+                          {data?.suction_system_performance?.cutter_resistance?.toFixed(2) || "N/A"}
                         </span>
                         <span className="text-sm text-gray-400 flex items-center">
                           <i className="fas fa-caret-up text-yellow-400 mr-1"></i> 8%
@@ -1080,7 +1134,7 @@ export default function PredictiveAnalysis() {
                       </div>
                       <div className="flex justify-between items-end">
                         <span className="text-2xl font-bold text-gray-100">
-                          {data.suction_system_performance.turbidity_to_torque?.toFixed(6) || "N/A"}
+                          {data?.suction_system_performance?.turbidity_to_torque?.toFixed(6) || "N/A"}
                         </span>
                         <span className="text-sm text-gray-400 flex items-center">
                           <i className="fas fa-caret-up text-green-400 mr-1"></i> 3%
@@ -1098,7 +1152,7 @@ export default function PredictiveAnalysis() {
                       </div>
                       <div className="flex justify-between items-end">
                         <span className="text-2xl font-bold text-gray-100">
-                          {data.suction_system_performance.flow_stability_factor?.toFixed(6) || "N/A"}
+                          {data?.suction_system_performance?.flow_stability_factor?.toFixed(6) || "N/A"}
                         </span>
                         <span className="text-sm text-gray-400 flex items-center">
                           <i className="fas fa-equals text-gray-400 mr-1"></i> 0%

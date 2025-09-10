@@ -1,41 +1,44 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import { Skeleton, ChartSkeleton, MetricCardSkeleton } from "../components";
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { SuctionSystemService, type SuctionSystemData } from "../services/suctionSystemService";
+import { type SuctionSystemData, type SuctionSystemResponse, SuctionSystemService } from "../services/suctionSystemService";
+import { useSSE } from "../hooks/useSSE";
 import "../styles/suction-system.css";
 
 export default function SuctionSystem() {
-  const [data, setData] = useState<SuctionSystemData | null>(null);
-  const [loading, setLoading] = useState(true);
   const getCssVar = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-
-      console.log("Fetching suction system data...");
-      const suctionData = await SuctionSystemService.getSuctionSystem();
-
-      console.log("Data received:", suctionData);
-      setData(suctionData);
-
-    } catch (err) {
-      console.error("Error fetching suction system data:", err);
-      // Still set data to null and loading to false to show skeletons
-    } finally {
-      setLoading(false);
+  // Use SSE for real-time data updates
+  const { data: rawData, loading } = useSSE<SuctionSystemResponse>(SuctionSystemService.getSSEUrl(), {
+    onMessage: (newData) => {
+      console.log("Suction system data received via SSE:", newData);
+    },
+    onError: (error) => {
+      console.error("SSE connection error for suction system:", error);
     }
+  });
+
+  // Normalize data to handle array response format
+  const normalizeData = (rawData: SuctionSystemResponse | null): SuctionSystemData | null => {
+    if (!rawData?.data) return null;
+    
+    // If data is an array, take the first element
+    if (Array.isArray(rawData.data)) {
+      return rawData.data[0] || null;
+    }
+    
+    // If data is an object, return it directly (fallback)
+    return rawData.data as SuctionSystemData;
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const data = normalizeData(rawData);
 
   useEffect(() => {
     const onThemeChange = () => {
-      // Recharts reads colors from props; force re-render
-      setData((d) => (d ? { ...d } : d));
+      // Recharts reads colors from props; force re-render by updating a dummy state
+      // Since we're using SSE, we don't need to manually trigger re-renders
+      console.log('Theme changed, charts will update automatically');
     };
     window.addEventListener('themechange', onThemeChange);
     return () => window.removeEventListener('themechange', onThemeChange);
@@ -73,11 +76,23 @@ export default function SuctionSystem() {
           </div>
         </div>
 
-        {/* Loading indicator */}
-        {/* {loading && (
-          <div className="bg-gray-600 text-white px-4 py-2 flex items-center justify-center space-x-2">
-            <Loader variant="dots" size="sm" color="secondary" />
-            <span className="text-sm font-medium">Loading suction system data...</span>
+        {/* Connection Status Banner */}
+        {/* {error && (
+          <div className="bg-red-600 text-white px-4 py-2 flex items-center justify-center space-x-2">
+            <i className="fas fa-exclamation-triangle"></i>
+            <span className="text-sm font-medium">Connection Error: {error}</span>
+          </div>
+        )}
+        {!isConnected && !error && (
+          <div className="bg-yellow-600 text-white px-4 py-2 flex items-center justify-center space-x-2">
+            <i className="fas fa-spinner fa-spin"></i>
+            <span className="text-sm font-medium">Connecting to real-time data stream...</span>
+          </div>
+        )}
+        {isConnected && (
+          <div className="bg-green-600 text-white px-4 py-2 flex items-center justify-center space-x-2">
+            <i className="fas fa-check-circle"></i>
+            <span className="text-sm font-medium">Connected to real-time data stream</span>
           </div>
         )} */}
 
@@ -129,7 +144,7 @@ export default function SuctionSystem() {
                 </div>
                 <div>
                   <div className="text-sm text-gray-400">Flow Rate</div>
-                  <div className="font-bold text-blue-400">{data.pipe_performance.suction_pipe_flow_rate} m³/s</div>
+                  <div className="font-bold text-blue-400">{data?.pipe_performance?.suction_pipe_flow_rate || 0} m³/s</div>
                 </div>
               </div>
 
@@ -139,7 +154,7 @@ export default function SuctionSystem() {
                 </div>
                 <div>
                   <div className="text-sm text-gray-400">Pressure</div>
-                  <div className="font-bold text-green-400">{data.pipe_performance.suction_pipe_pressure} bar</div>
+                  <div className="font-bold text-green-400">{data?.pipe_performance?.suction_pipe_pressure || 0} bar</div>
                 </div>
               </div>
             </>
@@ -179,15 +194,15 @@ export default function SuctionSystem() {
                   <>
                     <div className="bg-gray-700 rounded-lg p-3">
                       <div className="text-sm text-gray-400 mb-1">SUCTION DEPTH</div>
-                      <div className="text-2xl font-bold text-blue-400">{data.pipe_performance.suction_depth} m</div>
+                      <div className="text-2xl font-bold text-blue-400">{data?.pipe_performance?.suction_depth || 0} m</div>
                     </div>
                     <div className="bg-gray-700 rounded-lg p-3">
                       <div className="text-sm text-gray-400 mb-1">SUCTION PIPE PRESSURE</div>
-                      <div className="text-2xl font-bold text-green-400">{data.pipe_performance.suction_pipe_pressure} bar</div>
+                      <div className="text-2xl font-bold text-green-400">{data?.pipe_performance?.suction_pipe_pressure || 0} bar</div>
                     </div>
                     <div className="bg-gray-700 rounded-lg p-3">
                       <div className="text-sm text-gray-400 mb-1">SUCTION PIPE FLOW RATE</div>
-                      <div className="text-2xl font-bold text-yellow-400">{data.pipe_performance.suction_pipe_flow_rate} m³/s</div>
+                      <div className="text-2xl font-bold text-yellow-400">{data?.pipe_performance?.suction_pipe_flow_rate || 0} m³/s</div>
                     </div>
                   </>
                 ) : (
@@ -281,7 +296,7 @@ export default function SuctionSystem() {
                 <h3 className="font-medium">Draghead & Cutter</h3>
                 <span className="text-sm text-gray-400">System Analysis</span>
               </div>
-              <div className="space-y-20">
+              <div className="space-y-16">
                 {loading ? (
                   <>
                     {[1, 2, 3].map((i) => (
@@ -303,8 +318,8 @@ export default function SuctionSystem() {
                     <div>
                       <div className="text-sm mb-4">DRAGHEAD PRESSURE & FLOW</div>
                       <div className="h-32">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart data={formatChartData(data.draghead_and_cutter.draghead_pressure_and_flow)}>
+                        <ResponsiveContainer width="100%" height="140%">
+                          <AreaChart data={formatChartData(data?.draghead_and_cutter?.draghead_pressure_and_flow || [])}>
                             <CartesianGrid strokeDasharray="3 3" stroke={getCssVar('--text-secondary') || '#9ca3af'} />
                             <XAxis dataKey="index" stroke={getCssVar('--text-secondary') || '#9ca3af'} />
                             <YAxis stroke={getCssVar('--text-secondary') || '#9ca3af'} />
@@ -329,10 +344,10 @@ export default function SuctionSystem() {
                       </div>
                     </div>
                     <div>
-                      <div className="text-sm mb-2">CUTTER TORQUE & RPM</div>
+                      <div className="text-sm mb-4">CUTTER TORQUE & RPM</div>
                       <div className="h-32">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <LineChart data={formatChartData(data.draghead_and_cutter.cutter_torque_and_rpm)}>
+                        <ResponsiveContainer width="100%" height="140%">
+                          <LineChart data={formatChartData(data?.draghead_and_cutter?.cutter_torque_and_rpm || [])}>
                             <CartesianGrid strokeDasharray="3 3" stroke={getCssVar('--text-secondary') || '#9ca3af'} />
                             <XAxis dataKey="index" stroke={getCssVar('--text-secondary') || '#9ca3af'} />
                             <YAxis stroke={getCssVar('--text-secondary') || '#9ca3af'} />
@@ -357,11 +372,11 @@ export default function SuctionSystem() {
                     </div>
                     <div className="bg-gray-700 rounded-lg p-3">
                       <div className="text-sm text-gray-400 mb-1">SEABED RESISTANCE</div>
-                      <div className="text-xl font-bold text-yellow-400">{data.draghead_and_cutter["SEABED RESISTANCE"]}</div>
+                      <div className="text-xl font-bold text-yellow-400">{data?.draghead_and_cutter?.["SEABED RESISTANCE"] || 0}</div>
                       <div className="h-2 bg-gray-600 rounded-full overflow-hidden mt-2">
                         <div
                           className="h-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500"
-                          style={{ width: `${parseInt(data.draghead_and_cutter["SEABED RESISTANCE"])}%` }}
+                          style={{ width: `${parseInt(String(data?.draghead_and_cutter?.["SEABED RESISTANCE"] || 0))}%` }}
                         ></div>
                       </div>
                     </div>
@@ -428,24 +443,24 @@ export default function SuctionSystem() {
                     <div className="text-center">
                       <div className="text-sm text-center mb-2">GRAB POSITION</div>
                       <div className="w-16 h-16 mx-auto bg-gray-700 rounded-full flex items-center justify-center">
-                        <i className={`fas fa-${data.excavation_control.grab_position.toLowerCase() === 'closed' ? 'lock' : 'unlock'} text-2xl ${data.excavation_control.grab_position.toLowerCase() === 'closed' ? 'text-red-400' : 'text-green-400'}`}></i>
+                        <i className={`fas fa-${(data?.excavation_control?.grab_position?.toLowerCase() || 'closed') === 'closed' ? 'lock' : 'unlock'} text-2xl ${(data?.excavation_control?.grab_position?.toLowerCase() || 'closed') === 'closed' ? 'text-red-400' : 'text-green-400'}`}></i>
                       </div>
-                      <div className="text-center mt-2 text-xs text-gray-400">{data.excavation_control.grab_position.toUpperCase()}</div>
+                      <div className="text-center mt-2 text-xs text-gray-400">{(data?.excavation_control?.grab_position || 'CLOSED').toUpperCase()}</div>
                     </div>
                     <div>
                       <div className="text-sm text-center mb-4">BOOM/ARM/BUCKET ANGLES</div>
                       <div className="grid grid-cols-3 gap-4">
                         <div className="bg-gray-700 rounded-lg p-3">
                           <div className="text-xs text-center mb-1 text-gray-400">BOOM</div>
-                          <div className="text-xl text-center font-bold text-green-400">{data.excavation_control.boom_arm_bucket_angles.boom_angle}°</div>
+                          <div className="text-xl text-center font-bold text-green-400">{data?.excavation_control?.boom_arm_bucket_angles?.boom_angle || 0}°</div>
                         </div>
                         <div className="bg-gray-700 rounded-lg p-3">
                           <div className="text-xs text-center mb-1 text-gray-400">ARM</div>
-                          <div className="text-xl text-center font-bold text-blue-400">{data.excavation_control.boom_arm_bucket_angles.arm_angle}°</div>
+                          <div className="text-xl text-center font-bold text-blue-400">{data?.excavation_control?.boom_arm_bucket_angles?.arm_angle || 0}°</div>
                         </div>
                         <div className="bg-gray-700 rounded-lg p-3">
                           <div className="text-xs text-center mb-1 text-gray-400">BUCKET</div>
-                          <div className="text-xl text-center font-bold text-yellow-400">{data.excavation_control.boom_arm_bucket_angles.bucket_angle}°</div>
+                          <div className="text-xl text-center font-bold text-yellow-400">{data?.excavation_control?.boom_arm_bucket_angles?.bucket_angle || 0}°</div>
                         </div>
                       </div>
                     </div>
@@ -454,7 +469,7 @@ export default function SuctionSystem() {
                       <div className="h-2 bg-gray-600 rounded-full overflow-hidden">
                         <div
                           className="h-full bg-green-500 animate-pulse"
-                          style={{ width: `${parseInt(data.excavation_control.boom_arm_bucket_angles.EXCAVATION_ACTIVITY)}%` }}
+                          style={{ width: `${parseInt(String(data?.excavation_control?.boom_arm_bucket_angles?.EXCAVATION_ACTIVITY || 0))}%` }}
                         ></div>
                       </div>
                       <div className="flex justify-between text-xs mt-2 text-gray-400">
@@ -576,7 +591,7 @@ export default function SuctionSystem() {
               <ChartSkeleton type="line" height="h-64" />
             ) : data ? (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={formatChartData(data.trend_analysis.suction_pressure)}>
+                <LineChart data={formatChartData(data?.trend_analysis?.suction_pressure || [])}>
                   <CartesianGrid strokeDasharray="3 3" stroke={getCssVar('--text-secondary') || '#9ca3af'} />
                   <XAxis dataKey="index" stroke={getCssVar('--text-secondary') || '#9ca3af'} />
                   <YAxis stroke={getCssVar('--text-secondary') || '#9ca3af'} />

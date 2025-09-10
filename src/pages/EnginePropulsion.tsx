@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import {
   Skeleton,
@@ -9,7 +9,8 @@ import {
 } from "../components";
 import "../styles/engine.propulsion.css";
 import Chart from "chart.js/auto";
-import { getEnginePropulsion } from "../services/engineservice";
+import { useSSE } from "../hooks/useSSE";
+import { engineService } from "../services/engineservice";
 
 interface Overview {
   engine_rpm: number;
@@ -38,6 +39,10 @@ interface VibrationAndBearing {
 interface TrendAnalysis {
   engine_rpm: number[];
   shaft_rpm: number[];
+  exhaust_temp: number[];
+  fuel_pressure: number[];
+  lube_oil_temp: number[];
+  vibration: number[];
 }
 
 interface EnginePropulsionData {
@@ -47,10 +52,44 @@ interface EnginePropulsionData {
   trend_analysis: TrendAnalysis;
 }
 
+// SSE Response can be either an object or an array of objects
+interface EnginePropulsionSSEResponse {
+  data: EnginePropulsionData | EnginePropulsionData[];
+}
+
+// Normalized data type for consistent access
+interface NormalizedEngineData {
+  overview: Overview;
+  temperature_and_pressure: TemperatureAndPressure;
+  vibration_and_bearing: VibrationAndBearing;
+  trend_analysis: TrendAnalysis;
+}
+
 export default function EnginePropulsion() {
-  const [data, setData] = useState<EnginePropulsionData | null>(null);
-  const [loading, setLoading] = useState(true);
-  // const [error, setError] = useState<string | null>(null);
+  // Use SSE for real-time data updates
+  const { data: rawData, loading } = useSSE<EnginePropulsionSSEResponse>(engineService.getSSEUrl(), {
+    onMessage: (newData) => {
+      console.log("Engine propulsion data received via SSE:", newData);
+    },
+    onError: (error) => {
+      console.error("SSE connection error for engine propulsion:", error);
+    }
+  });
+
+  // Normalize data to handle both array and object responses
+  const normalizeData = (rawData: EnginePropulsionSSEResponse | null): NormalizedEngineData | null => {
+    if (!rawData?.data) return null;
+    
+    // If data is an array, take the first element
+    if (Array.isArray(rawData.data)) {
+      return rawData.data[0] || null;
+    }
+    
+    // If data is an object, return it directly
+    return rawData.data;
+  };
+
+  const data = normalizeData(rawData);
 
 
 
@@ -306,100 +345,68 @@ export default function EnginePropulsion() {
       reg("trendChart", ch);
     };
 
-    const fetchData = async () => {
-      console.log("data fetching...");
-      try {
-        setLoading(true);
-        const response: any = await getEnginePropulsion();
-        if (response.data && response.data.length > 0) {
-          const engineData = response.data[0];
-          setData(engineData);
-          return engineData;
-        }
-      } catch (err) {
-        console.error("Error fetching engine propulsion data:", err);
-      } finally {
-        setLoading(false);
+    const updateCharts = (engineData: NormalizedEngineData) => {
+      if (!engineData) return;
+
+      // Temperature charts
+      if (engineData.temperature_and_pressure?.exhaust_gas_temp?.length) {
+        line("exhaustTempChart", engineData.temperature_and_pressure.exhaust_gas_temp, "#ff5555");
       }
-      return null;
-    };
 
-    const fetchDataAndUpdateCharts = async (engineData: any) => {
-      try {
-        setLoading(true);
-        if (!engineData) return;
+      if (engineData.temperature_and_pressure?.cooling_water_temp?.length) {
+        line("coolingTempChart", engineData.temperature_and_pressure.cooling_water_temp, "#55aaff");
+      }
 
-        if (engineData.temperature_and_pressure.exhaust_gas_temp) {
-          line("exhaustTempChart", engineData.temperature_and_pressure.exhaust_gas_temp, "#ff5555");
-        }
+      if (engineData.temperature_and_pressure?.lube_oil_temp?.length) {
+        line("lubeTempChart", engineData.temperature_and_pressure.lube_oil_temp, "#ffaa55");
+      }
 
-        if (engineData.temperature_and_pressure.cooling_water_temp) {
-          line("coolingTempChart", engineData.temperature_and_pressure.cooling_water_temp, "#55aaff");
-        }
+      // Vibration charts
+      if (engineData.vibration_and_bearing?.engine_vibration?.length) {
+        spark("engineVibrationChart", engineData.vibration_and_bearing.engine_vibration, "#00ff00");
+      }
 
-        if (engineData.temperature_and_pressure.lube_oil_temp) {
-          line("lubeTempChart", engineData.temperature_and_pressure.lube_oil_temp, "#ffaa55");
-        }
+      if (engineData.vibration_and_bearing?.shaft_bearing_vibration?.length) {
+        spark("shaftVibrationChart", engineData.vibration_and_bearing.shaft_bearing_vibration, "#00ff00");
+      }
 
-        if (engineData.vibration_and_bearing.engine_vibration) {
-          spark("engineVibrationChart", engineData.vibration_and_bearing.engine_vibration, "#00ff00");
-        }
+      // Bearing temperature chart
+      if (engineData.vibration_and_bearing?.bearing_temperatures?.length) {
+        const bearingLabels = ['Fore Bearing', 'Aft Bearing', 'Thruster B1', 'Thruster B2'];
+        const bearingColors = engineData.vibration_and_bearing.bearing_temperatures.map((value: number) => {
+          if (value < 70) return '#00ff00';
+          if (value < 80) return '#ffff00';
+          return '#ff0000';
+        });
+        bar("bearingTempChart", bearingLabels, engineData.vibration_and_bearing.bearing_temperatures, bearingColors);
+      }
 
-        if (engineData.vibration_and_bearing.shaft_bearing_vibration) {
-          spark("shaftVibrationChart", engineData.vibration_and_bearing.shaft_bearing_vibration, "#00ff00");
-        }
+      // Pressure gauges
+      if (engineData.temperature_and_pressure?.fuel_pressure?.length) {
+        const fuelValue = getCurrentValue(engineData.temperature_and_pressure.fuel_pressure, 0);
+        createPressureGauge("fuelPressureGauge", fuelValue, 5.0, "#10b981");
+      }
 
-        if (engineData.vibration_and_bearing.bearing_temperatures) {
-          const bearingLabels = ['Fore Bearing', 'Aft Bearing', 'Thruster B1', 'Thruster B2'];
-          const bearingColors = engineData.vibration_and_bearing.bearing_temperatures.map((value: number) => {
-            if (value < 70) return '#00ff00';
-            if (value < 80) return '#ffff00';
-            return '#ff0000';
-          });
-          bar("bearingTempChart", bearingLabels, engineData.vibration_and_bearing.bearing_temperatures, bearingColors);
-        }
+      if (engineData.temperature_and_pressure?.lube_oil_pressure?.length) {
+        const lubeValue = getCurrentValue(engineData.temperature_and_pressure.lube_oil_pressure, 0);
+        createPressureGauge("lubePressureGauge", lubeValue, 4.5, "#3b82f6");
+      }
 
-        if (engineData.temperature_and_pressure.fuel_pressure) {
-          const fuelValue = getCurrentValue(engineData.temperature_and_pressure.fuel_pressure, 0);
-          createPressureGauge("fuelPressureGauge", fuelValue, 5.0, "#10b981");
-        }
-
-        if (engineData.temperature_and_pressure.lube_oil_pressure) {
-          const lubeValue = getCurrentValue(engineData.temperature_and_pressure.lube_oil_pressure, 0);
-          createPressureGauge("lubePressureGauge", lubeValue, 4.5, "#3b82f6");
-        }
-
-        if (engineData.temperature_and_pressure.exhaust_gas_temp) {
-          trend(engineData.temperature_and_pressure.exhaust_gas_temp);
-        }
-
-      } catch (err) {
-        console.error("Error updating charts:", err);
-      } finally {
-        setLoading(false);
+      // Trend analysis chart
+      if (engineData.temperature_and_pressure?.exhaust_gas_temp?.length) {
+        trend(engineData.temperature_and_pressure.exhaust_gas_temp);
       }
     };
 
-    // 👇 Main async runner
-    const init = async () => {
-      const engineData = await fetchData(); // Step 1
-      setTimeout(() => {
-        (async () => {
-          await fetchDataAndUpdateCharts(engineData);
-        })();
-      }, 100);
-      // Step 2
-    };
+    // Update charts when data changes
+    if (data) {
+      updateCharts(data);
+    }
 
-    init(); // 👈 fire the flow
-
-    const onThemeChange = async () => {
-      const engineData = await fetchData();
-      setTimeout(() => {
-        (async () => {
-          await fetchDataAndUpdateCharts(engineData);
-        })();
-      }, 100);
+    const onThemeChange = () => {
+      if (data) {
+        updateCharts(data);
+      }
     };
     window.addEventListener('themechange', onThemeChange);
 
@@ -407,11 +414,25 @@ export default function EnginePropulsion() {
       destroyAll(); // 👈 clean up on unmount
       window.removeEventListener('themechange', onThemeChange);
     };
-  }, []);
+  }, [data]);
 
-  const getCurrentValue = (values: number[] | undefined, fallback: number) => {
+  const getCurrentValue = (values: number[] | undefined, fallback: number): number => {
     return values && values.length > 0 ? values[values.length - 1] : fallback;
   };
+
+  // Safe data access helpers
+  const getOverviewValue = (key: keyof Overview, fallback: number = 0): number => {
+    return data?.overview?.[key] ?? fallback;
+  };
+
+  const getTemperatureValue = (key: keyof TemperatureAndPressure, fallback: number = 0): number => {
+    return getCurrentValue(data?.temperature_and_pressure?.[key], fallback);
+  };
+
+  const getVibrationValue = (key: keyof VibrationAndBearing, fallback: number = 0): number => {
+    return getCurrentValue(data?.vibration_and_bearing?.[key], fallback);
+  };
+
 
   return (
     <div className="min-h-screen flex overflow-hidden bg-gray-900 text-gray-100">
@@ -439,11 +460,23 @@ export default function EnginePropulsion() {
         </div>
 
 
-        {/* Loading indicator */}
-        {/* {loading && (
-          <div className="bg-gray-600 text-white px-4 py-2 flex items-center justify-center space-x-2">
-            <Loader variant="dots" size="sm" color="secondary" />
-            <span className="text-sm font-medium">Loading engine propulsion data...</span>
+        {/* Connection Status Banner */}{/*         
+        {error && (
+          <div className="bg-red-600 text-white px-4 py-2 flex items-center justify-center space-x-2">
+            <i className="fas fa-exclamation-triangle"></i>
+            <span className="text-sm font-medium">Connection Error: {error}</span>
+          </div>
+        )}
+        {!isConnected && !error && (
+          <div className="bg-yellow-600 text-white px-4 py-2 flex items-center justify-center space-x-2">
+            <i className="fas fa-spinner fa-spin"></i>
+            <span className="text-sm font-medium">Connecting to real-time data stream...</span>
+          </div>
+        )}
+        {isConnected && (
+          <div className="bg-green-600 text-white px-4 py-2 flex items-center justify-center space-x-2">
+            <i className="fas fa-check-circle"></i>
+            <span className="text-sm font-medium">Connected to real-time data stream</span>
           </div>
         )} */}
 
@@ -466,7 +499,7 @@ export default function EnginePropulsion() {
                 </div>
                 <div>
                   <div className="text-sm text-gray-400">Engine RPM</div>
-                  <div className="font-bold text-green-400">{data.overview.engine_rpm.toLocaleString()}</div>
+                  <div className="font-bold text-green-400">{getOverviewValue('engine_rpm').toLocaleString()}</div>
                 </div>
               </div>
 
@@ -476,7 +509,7 @@ export default function EnginePropulsion() {
                 </div>
                 <div>
                   <div className="text-sm text-gray-400">Shaft RPM</div>
-                  <div className="font-bold text-blue-400">{data.overview.shaft_rpm.toLocaleString()}</div>
+                  <div className="font-bold text-blue-400">{getOverviewValue('shaft_rpm').toLocaleString()}</div>
                 </div>
               </div>
 
@@ -486,7 +519,7 @@ export default function EnginePropulsion() {
                 </div>
                 <div>
                   <div className="text-sm text-gray-400">Turbocharger</div>
-                  <div className="font-bold text-yellow-400">{data.overview.turbocharger_rpm.toLocaleString()}</div>
+                  <div className="font-bold text-yellow-400">{getOverviewValue('turbocharger_rpm').toLocaleString()}</div>
                 </div>
               </div>
 
@@ -496,7 +529,7 @@ export default function EnginePropulsion() {
                 </div>
                 <div>
                   <div className="text-sm text-gray-400">Thruster RPM</div>
-                  <div className="font-bold text-blue-400">{data.overview.thruster_rpm.toLocaleString()}</div>
+                  <div className="font-bold text-blue-400">{getOverviewValue('thruster_rpm').toLocaleString()}</div>
                 </div>
               </div>
 
@@ -506,7 +539,7 @@ export default function EnginePropulsion() {
                 </div>
                 <div>
                   <div className="text-sm text-gray-400">Thruster Load</div>
-                  <div className="font-bold text-yellow-400">{data.overview.thruster_load.toFixed(1)}%</div>
+                  <div className="font-bold text-yellow-400">{getOverviewValue('thruster_load').toFixed(1)}%</div>
                 </div>
               </div>
 
@@ -516,7 +549,7 @@ export default function EnginePropulsion() {
                 </div>
                 <div>
                   <div className="text-sm text-gray-400">System Health</div>
-                  <div className="font-bold text-green-400">{data.overview.system_health.toFixed(1)}%</div>
+                  <div className="font-bold text-green-400">{getOverviewValue('system_health').toFixed(1)}%</div>
                 </div>
               </div>
             </>
@@ -564,7 +597,7 @@ export default function EnginePropulsion() {
                       <div className="text-sm mb-2">EXHAUST GAS TEMP</div>
                       <div className="h-32"><canvas id="exhaustTempChart"></canvas></div>
                       <div className="flex justify-between text-xs mt-1">
-                        <span className="text-green-400">{getCurrentValue(data.temperature_and_pressure.exhaust_gas_temp, 350)}°C</span>
+                        <span className="text-green-400">{getTemperatureValue('exhaust_gas_temp', 350)}°C</span>
                         <span className="text-yellow-400">450°C</span>
                         <span className="text-red-400">500°C</span>
                       </div>
@@ -573,7 +606,7 @@ export default function EnginePropulsion() {
                       <div className="text-sm mb-2">COOLING WATER TEMP</div>
                       <div className="h-32"><canvas id="coolingTempChart"></canvas></div>
                       <div className="flex justify-between text-xs mt-1">
-                        <span className="text-green-400">{getCurrentValue(data.temperature_and_pressure.cooling_water_temp, 75)}°C</span>
+                        <span className="text-green-400">{getTemperatureValue('cooling_water_temp', 75)}°C</span>
                         <span className="text-yellow-400">85°C</span>
                         <span className="text-red-400">95°C</span>
                       </div>
@@ -582,7 +615,7 @@ export default function EnginePropulsion() {
                       <div className="text-sm mb-2">LUBE OIL TEMP</div>
                       <div className="h-32"><canvas id="lubeTempChart"></canvas></div>
                       <div className="flex justify-between text-xs mt-1">
-                        <span className="text-green-400">{getCurrentValue(data.temperature_and_pressure.lube_oil_temp, 60)}°C</span>
+                        <span className="text-green-400">{getTemperatureValue('lube_oil_temp', 60)}°C</span>
                         <span className="text-yellow-400">75°C</span>
                         <span className="text-red-400">85°C</span>
                       </div>
@@ -633,7 +666,7 @@ export default function EnginePropulsion() {
                         <div className="w-24 h-24 relative">
                           <canvas id="fuelPressureGauge"></canvas>
                           <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="text-lg font-bold">{getCurrentValue(data.temperature_and_pressure.fuel_pressure, 0)}</div>
+                            <div className="text-lg font-bold">{getTemperatureValue('fuel_pressure', 0)}</div>
                           </div>
                         </div>
                       </div>
@@ -645,7 +678,7 @@ export default function EnginePropulsion() {
                         <div className="w-24 h-24 relative">
                           <canvas id="lubePressureGauge"></canvas>
                           <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="text-lg font-bold">{getCurrentValue(data.temperature_and_pressure.lube_oil_pressure, 0)}</div>
+                            <div className="text-lg font-bold">{getTemperatureValue('lube_oil_pressure', 0)}</div>
                           </div>
                         </div>
                       </div>
@@ -701,7 +734,7 @@ export default function EnginePropulsion() {
                       <div className="text-sm mb-2">ENGINE VIBRATION</div>
                       <div className="h-20"><canvas id="engineVibrationChart"></canvas></div>
                       <div className="flex justify-between items-center mt-1">
-                        <span className="text-xs text-gray-400">Current: {getCurrentValue(data.vibration_and_bearing.engine_vibration, 0)} mm/s</span>
+                        <span className="text-xs text-gray-400">Current: {getVibrationValue('engine_vibration', 0)} mm/s</span>
                         <div className="flex items-center">
                           <span className="text-xs mr-2 text-gray-400">Status:</span>
                           <div className="w-2 h-2 rounded-full bg-green-500"></div>
@@ -713,7 +746,7 @@ export default function EnginePropulsion() {
                       <div className="text-sm mb-2">SHAFT BEARING VIBRATION</div>
                       <div className="h-20"><canvas id="shaftVibrationChart"></canvas></div>
                       <div className="flex justify-between items-center mt-1">
-                        <span className="text-xs text-gray-400">Current: {getCurrentValue(data.vibration_and_bearing.shaft_bearing_vibration, 0)} mm/s</span>
+                        <span className="text-xs text-gray-400">Current: {getVibrationValue('shaft_bearing_vibration', 0)} mm/s</span>
                         <div className="flex items-center">
                           <span className="text-xs mr-2 text-gray-400">Status:</span>
                           <div className="w-2 h-2 rounded-full bg-green-500"></div>
@@ -770,23 +803,23 @@ export default function EnginePropulsion() {
                   </>
                 ) : data ? (
                   <>
-                    {data.overview.turbocharger_rpm > 12000 && (
+                    {getOverviewValue('turbocharger_rpm') > 12000 && (
                       <div className="border-l-4 border-yellow-500 pl-3 py-2 bg-gray-700 rounded">
                         <div className="flex justify-between items-center">
                           <div>
                             <div className="font-semibold text-yellow-400">Turbocharger RPM High</div>
-                            <div className="text-xs text-gray-400">{data.overview.turbocharger_rpm.toLocaleString()} RPM ({(data.overview.turbocharger_rpm / 15000 * 100).toFixed(0)}% of max)</div>
+                            <div className="text-xs text-gray-400">{getOverviewValue('turbocharger_rpm').toLocaleString()} RPM ({(getOverviewValue('turbocharger_rpm') / 15000 * 100).toFixed(0)}% of max)</div>
                           </div>
                           <div className="text-yellow-400"><i className="fas fa-exclamation-circle"></i></div>
                         </div>
                       </div>
                     )}
-                    {data.overview.thruster_load > 75 && (
+                    {getOverviewValue('thruster_load') > 75 && (
                       <div className="border-l-4 border-yellow-500 pl-3 py-2 bg-gray-700 rounded">
                         <div className="flex justify-between items-center">
                           <div>
                             <div className="font-semibold text-yellow-400">Thruster Load High</div>
-                            <div className="text-xs text-gray-400">{data.overview.thruster_load.toFixed(1)}% load</div>
+                            <div className="text-xs text-gray-400">{getOverviewValue('thruster_load').toFixed(1)}% load</div>
                           </div>
                           <div className="text-yellow-400"><i className="fas fa-exclamation-circle"></i></div>
                         </div>

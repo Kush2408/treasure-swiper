@@ -1,20 +1,30 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import Sidebar from "../components/Sidebar";
 import { Skeleton, ChartSkeleton, MetricCardSkeleton, Spinner } from "../components";
-import { dashboardService, type DashboardData } from "../services/dashboardService";
-import "../services/forcerefreshservice";
+import { type DashboardData, dashboardService } from "../services/dashboardService";
+import { useSSE } from "../hooks/useSSE";
 import "../styles/dashboard.css";
 import Chart from "chart.js/auto";
 
 export default function Dashboard() {
-  const [data, setData] = useState<DashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
-
   const chartRef = useRef<HTMLCanvasElement | null>(null);
   const portLocationChartRef = useRef<HTMLCanvasElement | null>(null);
   const progressCircleRef = useRef<SVGCircleElement | null>(null);
   const gaugeValueRef = useRef<HTMLDivElement | null>(null);
   const progressTextRef = useRef<SVGTextElement | null>(null);
+
+  // Use SSE for real-time data updates
+  const { data, loading } = useSSE<{data: DashboardData[]}>(dashboardService.getSSEUrl(), {
+    onMessage: (newData) => {
+      console.log("Dashboard data received via SSE:", newData);
+    },
+    onError: (error) => {
+      console.error("SSE connection error for dashboard:", error);
+    }
+  });
+
+  // Extract the first item from the data array for easier access
+  const dashboardData = data?.data?.[0];
 
   const getCssVar = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   const toRgba = (hexOrRgb: string, alpha: number) => {
@@ -32,30 +42,8 @@ export default function Dashboard() {
     return c;
   };
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-
-      console.log("Fetching dashboard data...");
-      const dashboardData = await dashboardService.getDashboardData();
-
-      console.log("Dashboard data received:", dashboardData);
-      setData(dashboardData);
-
-    } catch (err) {
-      console.error("Error fetching dashboard data:", err);
-      // Still set data to null and loading to false to show skeletons
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    if (!data) return;
+    if (!dashboardData) return;
 
     let chart: Chart | null = null;
     let portLocationChart: Chart | null = null;
@@ -75,7 +63,7 @@ export default function Dashboard() {
             datasets: [
               {
                 label: 'Efficiency',
-                data: data.performance_metrics.efficiency_performance_metrics,
+                data: dashboardData.performance_metrics.efficiency_performance_metrics,
                 borderColor: '#10b981',
                 backgroundColor: 'rgba(16, 185, 129, 0.1)',
                 borderWidth: 2,
@@ -84,7 +72,7 @@ export default function Dashboard() {
               },
               {
                 label: 'Power Output',
-                data: data.performance_metrics.power_output_trend,
+                data: dashboardData.performance_metrics.power_output_trend,
                 borderColor: '#3b82f6',
                 backgroundColor: 'rgba(59, 130, 246, 0.1)',
                 borderWidth: 2,
@@ -129,7 +117,7 @@ export default function Dashboard() {
           const baseLon = 4.3575;
           const positions = [];
 
-          const healthData = data.overall_health || [85, 87, 89, 88, 90, 92, 91];
+          const healthData = dashboardData.overall_health || [85, 87, 89, 88, 90, 92, 91];
 
           for (let i = 0; i < healthData.length; i++) {
             const health = healthData[i];
@@ -233,13 +221,13 @@ export default function Dashboard() {
 
     const interval = setInterval(() => {
       if (gaugeValueRef.current) {
-        const healthValue = data.overall_health && data.overall_health.length > 0
-          ? data.overall_health[data.overall_health.length - 1]
+        const healthValue = dashboardData.overall_health && dashboardData.overall_health.length > 0
+          ? dashboardData.overall_health[dashboardData.overall_health.length - 1]
           : 85;
         gaugeValueRef.current.textContent = `${healthValue}%`;
       }
       if (progressCircleRef.current && progressTextRef.current) {
-        const progress = parseInt(data.maintenance.next_service) || 72;
+        const progress = dashboardData.maintenance.next_service || 72;
         const circumference = 251.2;
         const offset = circumference - (progress / 100) * circumference;
         progressCircleRef.current.style.strokeDashoffset = `${offset}`;
@@ -251,8 +239,8 @@ export default function Dashboard() {
       // rebuild charts on theme change
       if (chart) { chart.destroy(); chart = null; }
       if (portLocationChart) { portLocationChart.destroy(); portLocationChart = null; }
-      // trigger rerender by reusing data state
-      setData((d) => (d ? { ...d } : d));
+      // Charts will be rebuilt when data changes via SSE
+      console.log('Theme changed, charts will update automatically');
     };
     window.addEventListener('themechange', onThemeChange);
 
@@ -262,17 +250,29 @@ export default function Dashboard() {
       if (portLocationChart) portLocationChart.destroy();
       window.removeEventListener('themechange', onThemeChange);
     };
-  }, [data]);
+  }, [dashboardData]);
 
   return (
     <div className="min-h-screen flex overflow-hidden">
       <Sidebar />
       <div className="flex-1 flex flex-col p-4 md:p-6 overflow-hidden relative">
-        {/* Loading Banner */}
-        {/* {loading && (
-          <div className="bg-gray-600 text-white px-4 py-2 flex items-center justify-center space-x-2 mb-4 rounded-lg">
-            <Loader variant="dots" size="sm" color="secondary" />
-            <span className="text-sm font-medium">Loading dashboard data...</span>
+        {/* Connection Status Banner */}
+        {/* {error && (
+          <div className="bg-red-600 text-white px-4 py-2 flex items-center justify-center space-x-2 mb-4 rounded-lg">
+            <i className="fas fa-exclamation-triangle"></i>
+            <span className="text-sm font-medium">Connection Error: {error}</span>
+          </div>
+        )}
+        {!isConnected && !error && (
+          <div className="bg-yellow-600 text-white px-4 py-2 flex items-center justify-center space-x-2 mb-4 rounded-lg">
+            <i className="fas fa-spinner fa-spin"></i>
+            <span className="text-sm font-medium">Connecting to real-time data stream...</span>
+          </div>
+        )}
+        {isConnected && (
+          <div className="bg-green-600 text-white px-4 py-2 flex items-center justify-center space-x-2 mb-4 rounded-lg">
+            <i className="fas fa-check-circle"></i>
+            <span className="text-sm font-medium">Connected to real-time data stream</span>
           </div>
         )} */}
 
@@ -286,7 +286,7 @@ export default function Dashboard() {
               <MetricCardSkeleton />
               <MetricCardSkeleton />
             </>
-          ) : data ? (
+          ) : dashboardData ? (
             <>
               <div className="bg-gray-800 rounded-lg p-4 flex items-center border border-gray-700">
                 <div className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center mr-3">
@@ -294,7 +294,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <div className="text-xs text-gray-400">ENGINE TEMP</div>
-                  <div className="text-xl font-bold text-gray-400">{data.engine_temperature}°C</div>
+                  <div className="text-xl font-bold text-gray-400">{dashboardData.engine_temperature}°C</div>
                 </div>
               </div>
 
@@ -304,7 +304,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <div className="text-xs text-gray-400">RPM</div>
-                  <div className="text-xl font-bold text-gray-400">{data.engine_rpm}</div>
+                  <div className="text-xl font-bold text-gray-400">{Math.round(dashboardData.engine_rpm)}</div>
                 </div>
               </div>
 
@@ -314,7 +314,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <div className="text-xs text-gray-400">POWER</div>
-                  <div className="text-xl font-bold text-gray-400">{data.power_output}%</div>
+                  <div className="text-xl font-bold text-gray-400">{Math.round(dashboardData.power_output)}%</div>
                 </div>
               </div>
 
@@ -324,7 +324,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <div className="text-xs text-gray-400">LOAD</div>
-                  <div className="text-xl font-bold text-gray-400">{data.load_sensor}%</div>
+                  <div className="text-xl font-bold text-gray-400">{Math.round(dashboardData.load_sensor)}%</div>
                 </div>
               </div>
 
@@ -334,7 +334,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <div className="text-xs text-gray-400">DEPTH</div>
-                  <div className="text-xl font-bold text-gray-400">{data.depth_sensor}m</div>
+                  <div className="text-xl font-bold text-gray-400">{dashboardData.depth_sensor}m</div>
                 </div>
               </div>
             </>
@@ -360,7 +360,7 @@ export default function Dashboard() {
             </div>
 
             <div className="flex justify-center">
-              {!data ? (
+              {!dashboardData ? (
                 <div className="flex items-center justify-center w-32 h-32">
                   <Spinner variant="dual-ring" size="xl" color="primary" />
                 </div>
@@ -385,12 +385,12 @@ export default function Dashboard() {
                       strokeLinecap="round"
                       className="text-gray-500"
                       strokeDasharray="282.6"
-                      strokeDashoffset={data.overall_health && data.overall_health.length > 0 ? 282.6 - (data.overall_health[data.overall_health.length - 1] / 100) * 282.6 : 50}
+                      strokeDashoffset={dashboardData.overall_health && dashboardData.overall_health.length > 0 ? 282.6 - (dashboardData.overall_health[dashboardData.overall_health.length - 1] / 100) * 282.6 : 50}
                       fill="transparent"
                     />
                   </svg>
                   <span className="absolute text-2xl font-bold text-gray-400">
-                    {data.overall_health && data.overall_health.length > 0 ? `${data.overall_health[data.overall_health.length - 1]}%` : '82%'}
+                    {dashboardData.overall_health && dashboardData.overall_health.length > 0 ? `${Math.round(dashboardData.overall_health[dashboardData.overall_health.length - 1])}%` : '82%'}
                   </span>
                 </div>
               )}
@@ -479,15 +479,15 @@ export default function Dashboard() {
                   ))}
                 </div>
               </>
-            ) : data ? (
+            ) : dashboardData ? (
               <>
                 <div className="mb-4">
                   <div className="flex justify-between text-sm mb-1 text-gray-300">
                     <span>Next Service</span>
-                    <span>{data.maintenance.next_service}%</span>
+                    <span>{Math.round(dashboardData.maintenance.next_service)}%</span>
                   </div>
                   <div className="w-full bg-gray-700 rounded-full h-2">
-                    <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${data.maintenance.next_service}%` }}></div>
+                    <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${dashboardData.maintenance.next_service}%` }}></div>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-xs">
@@ -537,7 +537,7 @@ export default function Dashboard() {
               <i className="fas fa-sync-alt text-green-400"></i>
             </div>
             <div className="flex justify-center mb-4">
-              {!data ? (
+              {!dashboardData ? (
                 <div className="flex items-center justify-center w-24 h-24">
                   <Spinner variant="dual-ring" size="lg" color="success" />
                 </div>
@@ -549,7 +549,7 @@ export default function Dashboard() {
                     className="progress-ring-circle text-sky-300"
                     strokeWidth="8"
                     strokeDasharray="251.2"
-                    strokeDashoffset={parseInt(data.maintenance.next_service) ? 251.2 - (parseInt(data.maintenance.next_service) / 100) * 251.2 : 75.36}
+                    strokeDashoffset={dashboardData.maintenance.next_service ? 251.2 - (dashboardData.maintenance.next_service / 100) * 251.2 : 75.36}
                     strokeLinecap="round"
                     stroke="currentColor"
                     fill="transparent"
@@ -565,13 +565,13 @@ export default function Dashboard() {
                     dy=".3em"
                     className="text-xl font-bold fill-current text-gray-400"
                   >
-                    {data.maintenance.next_service}%
+                    {Math.round(dashboardData.maintenance.next_service)}%
                   </text>
                 </svg>
               )}
             </div>
             <div className="text-center text-sm">
-              {!data ? (
+              {!dashboardData ? (
                 <div className="flex flex-col items-center space-y-2">
                   <Spinner variant="pulse-dots" size="sm" color="success" />
                   <div className="text-gray-400 text-xs">Loading update status...</div>
@@ -579,7 +579,7 @@ export default function Dashboard() {
               ) : (
                 <>
                   <div className="mb-1 text-gray-100">System Update in Progress</div>
-                  <div className="text-gray-400">Estimated completion: {data.maintenance_update.estimated_completion}min</div>
+                  <div className="text-gray-400">Estimated completion: {Math.round(dashboardData.maintenance_update.estimated_completion)}min</div>
                 </>
               )}
             </div>
@@ -596,7 +596,7 @@ export default function Dashboard() {
             <div className="relative h-48">
               {loading ? (
                 <ChartSkeleton type="line" height="h-40" />
-              ) : data ? (
+              ) : dashboardData ? (
                 <canvas ref={chartRef} />
               ) : (
                 <ChartSkeleton type="line" height="h-40" />
@@ -612,7 +612,7 @@ export default function Dashboard() {
             <div className="relative h-48">
               {loading ? (
                 <ChartSkeleton type="line" height="h-40" />
-              ) : data && data.overall_health && data.overall_health.length > 0 ? (
+              ) : dashboardData && dashboardData.overall_health && dashboardData.overall_health.length > 0 ? (
                 <canvas ref={portLocationChartRef} />
               ) : (
                 <ChartSkeleton type="line" height="h-40" />

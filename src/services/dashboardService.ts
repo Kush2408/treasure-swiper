@@ -1,7 +1,7 @@
 import axios from "axios";
 
-// Environment configuration
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+// Environment configuration with fallback
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://192.168.10.251:8005/api/v1'
 
 // Create axios instance with proper configuration
 const api = axios.create({
@@ -19,19 +19,19 @@ export interface PerformanceMetrics {
 }
 
 export interface Maintenance {
-  next_service: string;
+  next_service: number;
 }
 
 export interface MaintenanceUpdate {
-  estimated_completion: string;
+  estimated_completion: number;
 }
 
 export interface DashboardData {
-  engine_temperature: string;
-  engine_rpm: string;
-  power_output: string;
-  load_sensor: string;
-  depth_sensor: string;
+  engine_temperature: number;
+  engine_rpm: number;
+  power_output: number;
+  load_sensor: number;
+  depth_sensor: number;
   overall_health: number[];
   maintenance: Maintenance;
   maintenance_update: MaintenanceUpdate;
@@ -58,6 +58,11 @@ export const dashboardService = {
       console.error("Error fetching dashboard data:", error);
       throw new Error("Failed to fetch dashboard data");
     }
+  },
+
+  // Get SSE URL for real-time dashboard data
+  getSSEUrl(): string {
+    return `${API_BASE_URL}/dashboard`;
   },
 
   // Method to test API connectivity

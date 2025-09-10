@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Environment configuration with fallback
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://192.168.10.251:8005/api/v1'
 
 // Create axios instance with proper configuration
 const api = axios.create({
@@ -14,22 +14,22 @@ const api = axios.create({
 
 // Type definitions for the API response
 export interface BoomArmBucketAngles {
-  arm_angle: string;
-  boom_angle: string;
-  bucket_angle: string;
-  EXCAVATION_ACTIVITY: string;
+  arm_angle: number;
+  boom_angle: number;
+  bucket_angle: number;
+  EXCAVATION_ACTIVITY: number;
 }
 
 export interface PipePerformance {
-  suction_depth: string;
-  suction_pipe_flow_rate: string;
-  suction_pipe_pressure: string;
+  suction_depth: number;
+  suction_pipe_flow_rate: number;
+  suction_pipe_pressure: number;
 }
 
 export interface DragheadAndCutter {
   draghead_pressure_and_flow: number[];
   cutter_torque_and_rpm: number[];
-  "SEABED RESISTANCE": string;
+  "SEABED RESISTANCE": number;
 }
 
 export interface ExcavationControl {
@@ -84,6 +84,11 @@ export const SuctionSystemService = {
     }
     
     throw new Error("No working API endpoint found");
+  },
+
+  // Get SSE URL for real-time suction system data
+  getSSEUrl(): string {
+    return `${API_BASE_URL}/suction-system`;
   },
 
   // Method to test API connectivity
