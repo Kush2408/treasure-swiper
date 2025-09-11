@@ -247,7 +247,7 @@ export default function SuctionSystem() {
                           <div className="font-semibold text-yellow-400">HIGH CUTTER TORQUE</div>
                           <div className="text-xs text-gray-400">2 min ago</div>
                         </div>
-                        <div className="text-yellow-400"><i className="fas fa-exclamation-circle"></i></div>
+                        <div className="text-yellow-400 mr-1"><i className="fas fa-exclamation-circle"></i></div>
                       </div>
                     </div>
                     <div className="border-l-4 border-yellow-500 pl-3 py-2 bg-gray-700 rounded">
@@ -256,7 +256,7 @@ export default function SuctionSystem() {
                           <div className="font-semibold text-yellow-400">DRAGHEAD PRESSURE INCREASE</div>
                           <div className="text-xs text-gray-400">5 min ago</div>
                         </div>
-                        <div className="text-yellow-400"><i className="fas fa-exclamation-circle"></i></div>
+                        <div className="text-yellow-400 mr-1"><i className="fas fa-exclamation-circle"></i></div>
                       </div>
                     </div>
                     <div className="border-l-4 border-gray-500 pl-3 py-2 bg-gray-700 rounded">
@@ -265,7 +265,7 @@ export default function SuctionSystem() {
                           <div className="font-semibold text-red-400">SUCTION PRESSURE FLUCTUATION</div>
                           <div className="text-xs text-gray-400">12 min ago</div>
                         </div>
-                        <div className="text-red-400"><i className="fas fa-exclamation-circle"></i></div>
+                        <div className="text-red-400 mr-1"><i className="fas fa-exclamation-circle"></i></div>
                       </div>
                     </div>
                   </>
