@@ -16,7 +16,7 @@ export default function Dashboard() {
   // Use SSE for real-time data updates
   const { data, loading } = useSSE<{data: DashboardData[]}>(dashboardService.getSSEUrl(), {
     onMessage: (newData) => {
-      console.log("Dashboard data received via SSE:", newData);
+      console.log("Dashboard data received via SSE:", newData);     
     },
     onError: (error) => {
       console.error("SSE connection error for dashboard:", error);
@@ -33,7 +33,7 @@ export default function Dashboard() {
       const bigint = parseInt(c.slice(1), 16);
       const r = (bigint >> 16) & 255;
       const g = (bigint >> 8) & 255;
-      const b = bigint & 255;
+      const b = bigint & 255; 
       return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
     if (c.startsWith('rgb')) {
