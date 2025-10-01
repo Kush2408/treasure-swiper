@@ -304,7 +304,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <div className="text-xs text-gray-400">RPM</div>
-                  <div className="text-xl font-bold text-gray-400">{(dashboardData.engine_rpm)}</div>
+                  <div className="text-xl font-bold text-gray-400">{dashboardData.engine_rpm}</div>
                 </div>
               </div>
 
@@ -314,7 +314,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <div className="text-xs text-gray-400">POWER</div>
-                  <div className="text-xl font-bold text-gray-400">{(dashboardData.power_output)}%</div>
+                  <div className="text-xl font-bold text-gray-400">{dashboardData.power_output}%</div>
                 </div>
               </div>
 
@@ -324,7 +324,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <div className="text-xs text-gray-400">LOAD</div>
-                  <div className="text-xl font-bold text-gray-400">{(dashboardData.load_sensor)}%</div>
+                  <div className="text-xl font-bold text-gray-400">{dashboardData.load_sensor}%</div>
                 </div>
               </div>
 

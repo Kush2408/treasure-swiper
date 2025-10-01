@@ -103,6 +103,31 @@ export const predictiveAnalysisService = {
     }
   },
 
+  // Force background processing when Start Live is pressed
+  async forceBackgroundProcessing(): Promise<any> {
+    try {
+      console.log("Forcing background processing...");
+      const response = await api.post("force-background-processing");
+      console.log("Background processing triggered:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error forcing background processing:", error);
+      throw new Error("Failed to trigger background processing");
+    }
+  },
+
+  // Check background processing status
+  async getBackgroundStatus(): Promise<any> {
+    try {
+      const response = await api.get("background-status");
+      console.log("Background status:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching background status:", error);
+      throw new Error("Failed to fetch background status");
+    }
+  },
+
   // Get SSE URL for real-time predictive analysis data
   getSSEUrl(): string {
     return `${API_BASE_URL}/predictive-analysis`;

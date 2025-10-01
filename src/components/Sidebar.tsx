@@ -61,7 +61,7 @@ export default function Sidebar() {
     <div className="sidebar-wrapper">
       <div className="sidebar">
         <div className="brand-header">
-          <h1 className="brand">TREASURE SWIPER</h1>
+          <h1 className="brand">DREASURE SWIPER</h1>
           <div className="theme-toggle-container">
             <button
               aria-label={isDarkTheme ? "Switch to light theme" : "Switch to dark theme"}
