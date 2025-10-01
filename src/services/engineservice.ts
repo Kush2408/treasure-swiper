@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Environment configuration with fallback
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://192.168.10.251:8005/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://192.168.10.251:8001/api/v1';
 
 const api = axios.create({
 	baseURL: API_BASE_URL,
